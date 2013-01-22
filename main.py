@@ -7,6 +7,7 @@ from PySide.QtCore import QDir, QModelIndex
 from Highlighter import Highlighter
 from gui.mainwindow import Ui_MainWindow
 from PySide.QtGui import QFileSystemModel, QFileDialog, QMessageBox, QItemSelectionRange
+from syntax import ChordProHighlighter
 
 class MainForm(QtGui.QMainWindow):
     def __init__(self, parent=None):
@@ -19,7 +20,7 @@ class MainForm(QtGui.QMainWindow):
 
         args = self.parseArguments()
 
-        self.highlighter = Highlighter()
+#        self.highlighter = Highlighter()
 
         self.workingDir = args.workingdir
 
@@ -81,7 +82,7 @@ class MainForm(QtGui.QMainWindow):
         font.setPointSize(10)
 
         self.ui.textEdit.setFont(font)
-        self.highlighter.addToDocument(self.ui.textEdit.document())
+        self.highlighter = ChordProHighlighter(self.ui.textEdit.document())
 
         self.dirty = False
         self.ui.textEdit.textChanged.connect(self.setDirty)
