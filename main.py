@@ -45,7 +45,7 @@ class MainForm(QtGui.QMainWindow):
         self.model = QFileSystemModel()
         self.model.setRootPath(self.workingDir)
         self.model.setNameFilters(self.tr("Chordii files (*.cho *.crd)"))
-#        self.model.setFilter(Qdir.Filters)
+        self.model.setFilter(QDir.Files)
         self.ui.fileView.setModel(self.model)
         self.ui.fileView.setRootIndex(self.model.index(self.workingDir))
         self.ui.fileView.setColumnHidden(2, True)
