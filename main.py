@@ -1,6 +1,7 @@
 #coding: utf-8
 import argparse
 import os
+import subprocess
 import sys
 from PySide import QtCore, QtGui
 from PySide.QtCore import QDir, QModelIndex
@@ -46,7 +47,7 @@ class MainForm(QtGui.QMainWindow):
         self.model = QFileSystemModel()
         self.model.setRootPath(self.workingDir)
         self.model.setNameFilters(self.tr("Chordii files (*.cho *.crd)"))
-#        self.model.setFilter(Qdir.Filters)
+        self.model.setFilter(QDir.Files)
         self.ui.fileView.setModel(self.model)
         self.ui.fileView.setRootIndex(self.model.index(self.workingDir))
         self.ui.fileView.setColumnHidden(2, True)
@@ -182,10 +183,16 @@ class MainForm(QtGui.QMainWindow):
         saveFileAct.triggered.connect(self.saveFile)
         fileMenu.addAction(saveFileAct)
 
+        fileMenu.addSeparator()
+
         saveProjectFileAct = QtGui.QAction(self.tr("Save &project"), self)
 #        saveProjectFileAct.setShortcut(QtGui.QKeySequence.Save)
         saveProjectFileAct.triggered.connect(self.saveProject)
         fileMenu.addAction(saveProjectFileAct)
+
+        exportFileAct = QtGui.QAction(self.tr("&Export songbook to PostScript..."), self)
+        exportFileAct.triggered.connect(self.runChordii)
+        fileMenu.addAction(exportFileAct)
 
         fileMenu.addSeparator()
 
@@ -209,6 +216,34 @@ class MainForm(QtGui.QMainWindow):
             os.makedirs(outDir)
         saveFile = open(outDir + "songbook.cho", "w")
         saveFile.write(saveString)
+
+    def runChordii(self, inputFile = None, outputFile = None):
+        """Run Chordii to produce output"""
+        command = ["chordii", "-i", "-L"]
+        if not any((inputFile, outputFile)):
+            outputFile = self.workingDir + "output/songbook.ps"
+            outDir = self.workingDir + "output/"
+            if not os.path.exists(outDir):
+                os.makedirs(outDir)
+            parent = self.model.index(self.workingDir)
+            for i in range(self.model.rowCount(parent)):
+                row = self.model.index(i,0,parent)
+                path = self.model.fileInfo(row).absoluteFilePath()
+                command.append(path)
+        command.append("-o")
+        command.append(outputFile)
+        try:
+            response = subprocess.check_output(command,
+                stderr=subprocess.STDOUT)
+            if response is not None:
+                msgBox = QMessageBox()
+                msgBox.setWindowTitle(self.tr(self.appName + " - Chordii warning"))
+                msgBox.setText(self.tr("Chordii exited with warnings."))
+                msgBox.setDetailedText(self.tr(bytearray(response).decode()))
+                msgBox.setIcon(QMessageBox.Warning)
+                msgBox.exec_()
+        except subprocess.CalledProcessError as e:
+            QMessageBox.critical(self, self.tr(self.appName + " - Chordii problem"), self.tr(e.output))
 
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
