@@ -25,16 +25,16 @@ STYLES = {
     }
 
 
-class PythonHighlighter (QSyntaxHighlighter):
+class ChordProHighlighter (QSyntaxHighlighter):
     """Syntax highlighter for the Python language.
     """
-    # Python keywords
+    # ChordPro keywords
     keywords = [
         'new_song', 'ns', 'title', 't', 'subtitle', 'st', 'start_of_chorus', 'soc', 'end_of_chorus', 'eoc',
         'comment', 'c', 'comment_italic', 'ci', 'comment_box', 'cb', 
         ]
 
-    # Python braces
+    # Braces
     braces = [
         '\{', '\}', '\[', '\]',
         ]
@@ -44,42 +44,42 @@ class PythonHighlighter (QSyntaxHighlighter):
         # Multi-line strings (expression, flag, style)
         # FIXME: The triple-quotes in these two lines will mess up the
         # syntax highlighting from this point onward
-        self.tri_single = (QRegExp("'''"), 1, STYLES['string2'])
-        self.tri_double = (QRegExp('"""'), 2, STYLES['string2'])
+#        self.tri_single = (QRegExp("'''"), 1, STYLES['string2'])
+#        self.tri_double = (QRegExp('"""'), 2, STYLES['string2'])
 
         rules = []
 
         # Keyword, operator, and brace rules
         rules += [(r'\b%s\b' % w, 0, STYLES['keyword'])
-                  for w in PythonHighlighter.keywords]
-        rules += [(r'%s' % o, 0, STYLES['operator'])
-                  for o in PythonHighlighter.operators]
+                  for w in ChordProHighlighter.keywords]
+#        rules += [(r'%s' % o, 0, STYLES['operator'])
+#                  for o in ChordProHighlighter.operators]
         rules += [(r'%s' % b, 0, STYLES['brace'])
-                  for b in PythonHighlighter.braces]
+                  for b in ChordProHighlighter.braces]
 
         # All other rules
-        rules += [
-            # 'self'
-            (r'\bself\b', 0, STYLES['self']),
-
-            # Double-quoted string, possibly containing escape sequences
-            (r'"[^"\\]*(\\.[^"\\]*)*"', 0, STYLES['string']),
-            # Single-quoted string, possibly containing escape sequences
-            (r"'[^'\\]*(\\.[^'\\]*)*'", 0, STYLES['string']),
-
-            # 'def' followed by an identifier
-            (r'\bdef\b\s*(\w+)', 1, STYLES['defclass']),
-            # 'class' followed by an identifier
-            (r'\bclass\b\s*(\w+)', 1, STYLES['defclass']),
-
-            # From '#' until a newline
-            (r'#[^\n]*', 0, STYLES['comment']),
-
-            # Numeric literals
-            (r'\b[+-]?[0-9]+[lL]?\b', 0, STYLES['numbers']),
-            (r'\b[+-]?0[xX][0-9A-Fa-f]+[lL]?\b', 0, STYLES['numbers']),
-            (r'\b[+-]?[0-9]+(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?\b', 0, STYLES['numbers']),
-            ]
+#        rules += [
+#            # 'self'
+#            (r'\bself\b', 0, STYLES['self']),
+#
+#            # Double-quoted string, possibly containing escape sequences
+#            (r'"[^"\\]*(\\.[^"\\]*)*"', 0, STYLES['string']),
+#            # Single-quoted string, possibly containing escape sequences
+#            (r"'[^'\\]*(\\.[^'\\]*)*'", 0, STYLES['string']),
+#
+#            # 'def' followed by an identifier
+#            (r'\bdef\b\s*(\w+)', 1, STYLES['defclass']),
+#            # 'class' followed by an identifier
+#            (r'\bclass\b\s*(\w+)', 1, STYLES['defclass']),
+#
+#            # From '#' until a newline
+#            (r'#[^\n]*', 0, STYLES['comment']),
+#
+#            # Numeric literals
+#            (r'\b[+-]?[0-9]+[lL]?\b', 0, STYLES['numbers']),
+#            (r'\b[+-]?0[xX][0-9A-Fa-f]+[lL]?\b', 0, STYLES['numbers']),
+#            (r'\b[+-]?[0-9]+(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?\b', 0, STYLES['numbers']),
+#            ]
 
         # Build a QRegExp for each pattern
         self.rules = [(QRegExp(pat), index, fmt)
@@ -103,9 +103,9 @@ class PythonHighlighter (QSyntaxHighlighter):
         self.setCurrentBlockState(0)
 
         # Do multi-line strings
-        in_multiline = self.match_multiline(text, *self.tri_single)
-        if not in_multiline:
-            in_multiline = self.match_multiline(text, *self.tri_double)
+#        in_multiline = self.match_multiline(text, *self.tri_single)
+#        if not in_multiline:
+#            in_multiline = self.match_multiline(text, *self.tri_double)
 
 
     def match_multiline(self, text, delimiter, in_state, style):
