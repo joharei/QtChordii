@@ -5,11 +5,9 @@ import subprocess
 import sys
 from PySide import QtCore, QtGui
 from PySide.QtCore import QDir, QModelIndex
-from Highlighter import Highlighter
 from syntax import ChordProHighlighter
 from gui.mainwindow import Ui_MainWindow
 from PySide.QtGui import QFileSystemModel, QFileDialog, QMessageBox, QItemSelectionRange
-from syntax import ChordProHighlighter
 
 class MainForm(QtGui.QMainWindow):
     def __init__(self, parent=None):
@@ -86,8 +84,8 @@ class MainForm(QtGui.QMainWindow):
         self.ui.textEdit.setFont(font)
         self.highlighter = ChordProHighlighter(self.ui.textEdit.document())
 
-        self.dirty = False
         self.ui.textEdit.textChanged.connect(self.setDirty)
+        self.dirty = False
 
     def selectionChanged(self, newSelection, oldSelection):
 #        test = QItemSelectionRange()
@@ -100,10 +98,11 @@ class MainForm(QtGui.QMainWindow):
     def setDirty(self):
         """On change of text in textEdit window, set the flag
         "dirty" to True"""
-        if self.dirty:
-            return True
-        self.dirty = True
-        self.updateStatus('self.dirty set to True')
+        if hasattr(self, "fileName"):
+            if self.dirty:
+                return True
+            self.dirty = True
+            self.updateStatus('self.dirty set to True')
 
     def clearDirty(self):
         """Clear the dirty."""
@@ -111,7 +110,7 @@ class MainForm(QtGui.QMainWindow):
 
     def updateStatus(self, message):
         """Keep status current."""
-        if self.fileName is not None:
+        if hasattr(self, "fileName") and self.fileName is not None:
             flbase = os.path.basename(self.fileName)
             self.setWindowTitle(str(self.appName + " - " + flbase + "[*]") )
             self.ui.statusBar.showMessage(message, 5000)
