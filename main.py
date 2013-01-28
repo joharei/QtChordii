@@ -6,6 +6,7 @@ import sys
 from PySide import QtCore, QtGui
 from PySide.QtCore import QDir, QModelIndex
 from Highlighter import Highlighter
+from syntax import ChordProHighlighter
 from gui.mainwindow import Ui_MainWindow
 from PySide.QtGui import QFileSystemModel, QFileDialog, QMessageBox, QItemSelectionRange
 from syntax import ChordProHighlighter
@@ -59,21 +60,21 @@ class MainForm(QtGui.QMainWindow):
         variableFormat = QtGui.QTextCharFormat()
         variableFormat.setFontWeight(QtGui.QFont.Bold)
         variableFormat.setForeground(QtCore.Qt.blue)
-        self.highlighter.addMapping("\\b[A-Z_]+\\b", variableFormat)
+#        self.highlighter.addMapping("\\b[A-Z_]+\\b", variableFormat)
 
         singleLineCommentFormat = QtGui.QTextCharFormat()
         singleLineCommentFormat.setBackground(QtGui.QColor("#77ff77"))
-        self.highlighter.addMapping("#[^\n]*", singleLineCommentFormat)
+#        self.highlighter.addMapping("#[^\n]*", singleLineCommentFormat)
 
         quotationFormat = QtGui.QTextCharFormat()
         quotationFormat.setBackground(QtCore.Qt.cyan)
         quotationFormat.setForeground(QtCore.Qt.blue)
-        self.highlighter.addMapping("\".*\"", quotationFormat)
+#        self.highlighter.addMapping("\".*\"", quotationFormat)
 
         functionFormat = QtGui.QTextCharFormat()
         functionFormat.setFontItalic(True)
         functionFormat.setForeground(QtCore.Qt.blue)
-        self.highlighter.addMapping("\\b[a-z0-9_]+\\(.*\\)", functionFormat)
+#        self.highlighter.addMapping("\\b[a-z0-9_]+\\(.*\\)", functionFormat)
 
 
 
