@@ -9,6 +9,10 @@ songbook projects with multiple songs.
 
 For more information about Chordii, check out their website: http://chordii.sourceforge.net/
 
+To run, execute main.py with Python 3:
+
+    $ python3 main.py
+
 Features
 --------
 
