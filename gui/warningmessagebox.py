@@ -13,7 +13,6 @@ class WarningMessageBox(QMessageBox):
         details_box = self.findChild(QTextEdit)
         if self.detail_box_size is None:
             self.detail_box_size = details_box.viewport().size()
-            print(details_box.viewport().size())
         if details_box is not None:
             details_box.setFixedSize(self.detail_box_size)
 
