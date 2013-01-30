@@ -9,6 +9,7 @@ from gui.warningmessagebox import WarningMessageBox
 from syntax import ChordProHighlighter
 from gui.mainwindow import Ui_MainWindow
 from PySide.QtGui import QFileSystemModel, QFileDialog, QMessageBox, QItemSelectionRange
+from which import which
 
 class MainForm(QtGui.QMainWindow):
     def __init__(self, parent=None):
@@ -97,8 +98,9 @@ class MainForm(QtGui.QMainWindow):
             self.model.index = oldSelection
 
     def setDirty(self):
-        """On change of text in textEdit window, set the flag
-        "dirty" to True"""
+        """
+        On change of text in textEdit window, set the flag "dirty" to True
+        """
         if hasattr(self, "fileName"):
             if self.dirty:
                 return True
@@ -110,7 +112,9 @@ class MainForm(QtGui.QMainWindow):
         self.dirty = False
 
     def updateStatus(self, message):
-        """Keep status current."""
+        """
+        Keep status current.
+        """
         if hasattr(self, "fileName") and self.fileName is not None:
             flbase = os.path.basename(self.fileName)
             self.setWindowTitle(str(self.appName + " - " + flbase + "[*]") )
@@ -118,7 +122,9 @@ class MainForm(QtGui.QMainWindow):
             self.setWindowModified(self.dirty)
 
     def okToContinue(self):
-        """Boolean result invocation method."""
+        """
+        Boolean result invocation method.
+        """
         if self.dirty:
             reply = QMessageBox.question(self,
                 self.appName + " - Unsaved Changes",
@@ -201,7 +207,9 @@ class MainForm(QtGui.QMainWindow):
             QtGui.QKeySequence.Quit)
 
     def saveProject(self):
-        """Save all the song files as one continuous file for passing to Chordii."""
+        """
+        Save all the song files as one continuous file for passing to Chordii.
+        """
         saveString = ""
         parent = self.model.index(self.workingDir)
         for i in range(self.model.rowCount(parent)):
@@ -219,8 +227,23 @@ class MainForm(QtGui.QMainWindow):
         saveFile.write(saveString)
 
     def runChordii(self, inputFile = None, outputFile = None):
-        """Run Chordii to produce output"""
-        command = ["chordii", "-i", "-L"]
+        """
+        Run Chordii to produce output.
+        """
+
+        chordiiCommand = which("chordii")
+        if chordiiCommand is None:
+            chordiiCommand = which("chordii430")
+        if chordiiCommand is None:
+            ret = QMessageBox.critical(self, self.tr(self.appName + " - Chordii problem"),
+                self.tr("Couldn't find a chordii executable in the PATH. \
+                Please specify chordii's location to continue."), QMessageBox.Open | QMessageBox.Cancel,
+                QMessageBox.Open)
+            if ret == QMessageBox.Open:
+                chordiiCommand = QFileDialog.getOpenFileName(self, self.tr("Specify the chordii executable"),
+                    QDir.homePath())
+
+        command = [chordiiCommand, "-i", "-L"]
         if not any((inputFile, outputFile)):
             outputFile = self.workingDir + "output/songbook.ps"
             outDir = self.workingDir + "output/"
