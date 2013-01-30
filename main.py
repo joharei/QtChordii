@@ -5,6 +5,7 @@ import subprocess
 import sys
 from PySide import QtCore, QtGui
 from PySide.QtCore import QDir, QModelIndex
+from gui.warningmessagebox import WarningMessageBox
 from syntax import ChordProHighlighter
 from gui.mainwindow import Ui_MainWindow
 from PySide.QtGui import QFileSystemModel, QFileDialog, QMessageBox, QItemSelectionRange
@@ -236,7 +237,7 @@ class MainForm(QtGui.QMainWindow):
             response = subprocess.check_output(command,
                 stderr=subprocess.STDOUT)
             if response is not None:
-                msgBox = QMessageBox()
+                msgBox = WarningMessageBox()
                 msgBox.setWindowTitle(self.tr(self.appName + " - Chordii warning"))
                 msgBox.setText(self.tr("Chordii exited with warnings."))
                 msgBox.setDetailedText(self.tr(bytearray(response).decode()))
