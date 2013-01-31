@@ -238,10 +238,10 @@ class MainForm(QtGui.QMainWindow):
             file = open(path, "r")
             saveString += file.read()
             file.close()
-        outDir = self.workingDir + "output/"
+        outDir = os.path.join(self.workingDir, "output")
         if not os.path.exists(outDir):
             os.makedirs(outDir)
-        saveFile = open(outDir + "songbook.cho", "w")
+        saveFile = open(os.path.join(outDir, "songbook.cho"), "w")
         saveFile.write(saveString)
 
     def runChordii(self, inputFile = None, outputFile = None):
@@ -263,8 +263,8 @@ class MainForm(QtGui.QMainWindow):
 
         command = [chordiiCommand, "-i", "-L"]
         if not any((inputFile, outputFile)):
-            outputFile = self.workingDir + "output/songbook.ps"
-            outDir = self.workingDir + "output/"
+            outDir = self.workingDir + "output"
+            outputFile = os.path.join(outDir, "songbook.ps")
             if not os.path.exists(outDir):
                 os.makedirs(outDir)
             parent = self.model.index(self.workingDir)
