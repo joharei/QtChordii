@@ -28,7 +28,7 @@ from syntax import ChordProHighlighter
 from gui.mainwindow import Ui_MainWindow
 from PySide.QtGui import QFileSystemModel, QFileDialog, QMessageBox, QItemSelectionRange
 from which import which
-from tab2chordpro.Transpose import testTabFormat, enNotation
+from tab2chordpro.Transpose import testTabFormat, tab2ChordPro, enNotation
 
 class MainForm(QtGui.QMainWindow):
     def __init__(self, parent=None):
@@ -179,7 +179,7 @@ class MainForm(QtGui.QMainWindow):
                 self.ui.textEdit.setPlainText(inStream.readAll())
         self.clearDirty()
         self.updateStatus('File opened.')
-#        self.tab2chordpro()
+        self.tab2chordpro()
 
     def saveFile(self):
         """
@@ -328,7 +328,13 @@ class MainForm(QtGui.QMainWindow):
 
     def tab2chordpro(self):
         notation = testTabFormat(self.ui.textEdit.toPlainText(), [enNotation])
-        print(notation)
+        if notation is not None:
+            res = QMessageBox.question(self, self.tr(self.appName),
+                self.tr("It seems this file is in the tab format.\n" + "Do you want to convert it to the ChordPro format?"),
+                QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
+            if res is QMessageBox.No:
+                pass
+            self.ui.textEdit.setText(tab2ChordPro(self.ui.textEdit.toPlainText()))
 
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
