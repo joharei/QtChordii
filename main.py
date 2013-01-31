@@ -28,6 +28,7 @@ from syntax import ChordProHighlighter
 from gui.mainwindow import Ui_MainWindow
 from PySide.QtGui import QFileSystemModel, QFileDialog, QMessageBox, QItemSelectionRange
 from which import which
+from tab2chordpro.Transpose import testTabFormat, enNotation
 
 class MainForm(QtGui.QMainWindow):
     def __init__(self, parent=None):
@@ -104,6 +105,8 @@ class MainForm(QtGui.QMainWindow):
         self.ui.textEdit.setFont(font)
         self.highlighter = ChordProHighlighter(self.ui.textEdit.document())
 
+        self.ui.textEdit.setReadOnly(True)
+
         self.ui.textEdit.textChanged.connect(self.setDirty)
         self.dirty = False
 
@@ -154,7 +157,19 @@ class MainForm(QtGui.QMainWindow):
                 return self.saveFile()
         return True
 
+    def newFile(self):
+        if not self.okToContinue():
+            return
+        if self.ui.textEdit.isReadOnly():
+            self.ui.textEdit.setReadOnly(False)
+        self.fileName = None
+        self.ui.textEdit.setText('')
+        self.statusBar().showMessage('New file', 5000)
+
     def openFile(self, path=""):
+        if self.ui.textEdit.isReadOnly():
+            self.ui.textEdit.setReadOnly(False)
+
         self.fileName = path
 
         if self.fileName!="":
@@ -164,11 +179,14 @@ class MainForm(QtGui.QMainWindow):
                 self.ui.textEdit.setPlainText(inStream.readAll())
         self.clearDirty()
         self.updateStatus('File opened.')
+#        self.tab2chordpro()
 
     def saveFile(self):
-        """Save file with current name."""
+        """
+        Save file with current name.
+        """
         if self.fileName is None:
-            return self.fileSaveAs()
+            return self.saveFileAs()
         else:
             if not self.dirty:
                 return
@@ -185,6 +203,22 @@ class MainForm(QtGui.QMainWindow):
                 self.ui.statusBar.showMessage('Failed to save ...', 5000)
                 return False
 
+    def saveFileAs(self):
+        """
+        Save file with a different name and maybe different directory.
+        """
+        path = self.fileName if self.fileName is not None else self.workingDir
+        fname = QFileDialog.getSaveFileName(self,
+            self.tr("Save as..."), path, self.tr("Chordii files (*.cho *.crd)"))[0]
+        if fname:
+            print(fname)
+            if "." not in fname:
+                fname += ".cho"
+            self.fileName = fname
+            self.saveFile()
+            self.statusBar().showMessage('SaveAs file' + fname, 8000)
+            self.clearDirty()
+
     def openDir(self):
         self.workingDir = QFileDialog.getExistingDirectory(self,self.tr("Choose working directory"),QDir.homePath() if self.workingDir is None else "")
         print(self.workingDir)
@@ -193,10 +227,10 @@ class MainForm(QtGui.QMainWindow):
         fileMenu = QtGui.QMenu(self.tr("&File"), self)
         self.menuBar().addMenu(fileMenu)
 
-#        newFileAct = QtGui.QAction(self.tr("&New..."), self)
-#        newFileAct.setShortcut(QtGui.QKeySequence(self.tr("Ctrl+N", "File|New")))
-#        self.connect(newFileAct, QtCore.SIGNAL("triggered()"), self.newFile)
-#        fileMenu.addAction(newFileAct)
+        newFileAct = QtGui.QAction(self.tr("&New..."), self)
+        newFileAct.setShortcut(QtGui.QKeySequence.New)
+        newFileAct.triggered.connect(self.newFile)
+        fileMenu.addAction(newFileAct)
 
         openFileAct = QtGui.QAction(self.tr("&Open Directory..."), self)
         openFileAct.setShortcut(QtGui.QKeySequence.Open)
@@ -207,6 +241,11 @@ class MainForm(QtGui.QMainWindow):
         saveFileAct.setShortcut(QtGui.QKeySequence.Save)
         saveFileAct.triggered.connect(self.saveFile)
         fileMenu.addAction(saveFileAct)
+
+        saveFileAsAct = QtGui.QAction(self.tr("Save as..."), self)
+        saveFileAsAct.setShortcut(QtGui.QKeySequence.SaveAs)
+        saveFileAsAct.triggered.connect(self.saveFileAs)
+        fileMenu.addAction(saveFileAsAct)
 
         fileMenu.addSeparator()
 
@@ -286,6 +325,10 @@ class MainForm(QtGui.QMainWindow):
                 msgBox.exec_()
         except subprocess.CalledProcessError as e:
             QMessageBox.critical(self, self.tr(self.appName + " - Chordii problem"), self.tr(e.output))
+
+    def tab2chordpro(self):
+        notation = testTabFormat(self.ui.textEdit.toPlainText(), [enNotation])
+        print(notation)
 
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
