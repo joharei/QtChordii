@@ -45,7 +45,7 @@ class MainForm(QtGui.QMainWindow):
         self.workingDir = args.workingdir
 
         if self.workingDir is None:
-            self.workingDir = self.openDir()
+            self.openDir()
 
         self.setupFileTree()
         self.setupEditor()
@@ -186,8 +186,8 @@ class MainForm(QtGui.QMainWindow):
                 return False
 
     def openDir(self):
+        self.workingDir = QFileDialog.getExistingDirectory(self,self.tr("Choose working directory"),QDir.homePath() if self.workingDir is None else "")
         print(self.workingDir)
-        return QFileDialog.getExistingDirectory(self,self.tr("Choose working directory"),QDir.homePath() if self.workingDir is None else "")
 
     def setupFileMenu(self):
         fileMenu = QtGui.QMenu(self.tr("&File"), self)
