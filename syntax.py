@@ -72,7 +72,7 @@ class ChordProHighlighter (QSyntaxHighlighter):
         rules += [(r'\{%s\:' % w, 0, STYLES['keyword']) for w in ChordProHighlighter.keywords]
         rules += [(r'\{%s' % w, 0, STYLES['keyword']) for w in ChordProHighlighter.keywords]
         rules += [(r'%s' % b, 0, STYLES['curlyBrace']) for b in ChordProHighlighter.curlyBraces]
-        rules += [(r'\[(\w)*\]', 0, STYLES['chord'])]
+        rules += [(r'\[[^\]]*\]', 0, STYLES['chord'])]
 
         # Build a QRegExp for each pattern
         self.rules = [(QRegExp(pat), index, fmt)
