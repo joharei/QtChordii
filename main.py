@@ -302,7 +302,7 @@ class MainForm(QtGui.QMainWindow):
 
         command = [chordiiCommand, "-i", "-L"]
         if not any((inputFile, outputFile)):
-            outDir = self.workingDir + "output"
+            outDir = os.path.join(self.workingDir, "output")
             outputFile = os.path.join(outDir, "songbook.ps")
             if not os.path.exists(outDir):
                 os.makedirs(outDir)
