@@ -21,6 +21,7 @@ import argparse
 import os
 import subprocess
 import sys
+import codecs
 from PySide import QtCore, QtGui
 from PySide.QtCore import QDir, QModelIndex
 from gui.warningmessagebox import WarningMessageBox
@@ -173,10 +174,9 @@ class MainForm(QtGui.QMainWindow):
         self.fileName = path
 
         if self.fileName!="":
-            inFile = QtCore.QFile(self.fileName)
-            if inFile.open(QtCore.QFile.ReadWrite | QtCore.QFile.Text):
-                inStream = QtCore.QTextStream(inFile)
-                self.ui.textEdit.setPlainText(inStream.readAll())
+            inStream = codecs.open(self.fileName, "r", "ISO-8859-1")
+            if inStream:
+                self.ui.textEdit.setPlainText(inStream.read())
         self.clearDirty()
         self.updateStatus('File opened.')
         self.tab2chordpro()
@@ -191,7 +191,7 @@ class MainForm(QtGui.QMainWindow):
             if not self.dirty:
                 return
             fname = self.fileName
-            fl = open(fname, 'w')
+            fl = codecs.open(fname, 'w', "ISO-8859-1")
             tempText = self.ui.textEdit.toPlainText()
             if tempText:
                 fl.write(tempText)
