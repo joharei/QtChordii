@@ -333,7 +333,7 @@ class MainForm(QtGui.QMainWindow):
                 self.tr("It seems this file is in the tab format.\n" + "Do you want to convert it to the ChordPro format?"),
                 QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
             if res is QMessageBox.No:
-                pass
+                return
             self.ui.textEdit.setText(tab2ChordPro(self.ui.textEdit.toPlainText()))
 
 if __name__ == "__main__":
