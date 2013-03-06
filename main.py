@@ -108,6 +108,8 @@ class MainForm(QtGui.QMainWindow):
 
         self.ui.textEdit.setReadOnly(True)
 
+        self.ui.textEdit.setAcceptRichText(False)
+
         self.ui.textEdit.textChanged.connect(self.setDirty)
         self.dirty = False
 
