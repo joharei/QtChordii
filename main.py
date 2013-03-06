@@ -286,7 +286,10 @@ class MainForm(QtGui.QMainWindow):
         try:
             response = subprocess.check_output(command,
                 stderr=subprocess.STDOUT)
-            if response is not None:
+            if response is not None and response == b'':
+                QMessageBox.information(self, self.tr(self.appName + " - Chordii was successful"),
+                                        self.tr("Chordii compiled the songbook without warnings!"))
+            elif response is not None:
                 msgBox = WarningMessageBox()
                 msgBox.setWindowTitle(self.tr(self.appName + " - Chordii warning"))
                 msgBox.setText(self.tr("Chordii exited with warnings."))
@@ -294,7 +297,9 @@ class MainForm(QtGui.QMainWindow):
                 msgBox.setIcon(QMessageBox.Warning)
                 msgBox.exec_()
         except subprocess.CalledProcessError as e:
-            QMessageBox.critical(self, self.tr(self.appName + " - Chordii problem"), self.tr(e.output))
+            QMessageBox.critical(self, self.tr(self.appName + " - Chordii problem"),
+                                 self.tr("Chordii crashed while compiling. Please check your syntax.\
+                                         Tip: This is probably due to an incorrect chord definition."))
 
     def tab2chordpro(self):
         notation = testTabFormat(self.ui.textEdit.toPlainText(), [enNotation])
