@@ -18,6 +18,7 @@
 from PySide.QtCore import QRegExp
 from PySide.QtGui import QColor, QTextCharFormat, QFont, QSyntaxHighlighter
 
+
 def format(color, style=''):
     """Return a QTextCharFormat with the given attributes.
     """
@@ -40,17 +41,17 @@ STYLES = {
     'argument': format('green'),
     'curlyBrace': format('blue'),
     'chord': format('red')
-    }
+}
 
 
-class ChordProHighlighter (QSyntaxHighlighter):
+class ChordProHighlighter(QSyntaxHighlighter):
     """Syntax highlighter for the Python language.
     """
     # ChordPro keywords
     keywords = [
         'new_song', 'ns', 'title', 't', 'subtitle', 'st', 'start_of_chorus', 'soc', 'end_of_chorus', 'eoc',
-        'comment', 'c', 'comment_italic', 'ci', 'comment_box', 'cb', 
-        ]
+        'comment', 'c', 'comment_italic', 'ci', 'comment_box', 'cb', 'start_of_tab', 'sot', 'end_of_tab', 'eot',
+    ]
     argumentKeywords = [
         'title', 't', 'subtitle', 'st', 'comment', 'c',
     ]
@@ -58,10 +59,11 @@ class ChordProHighlighter (QSyntaxHighlighter):
     # Braces
     curlyBraces = [
         '\{', '\}',
-        ]
+    ]
     squareBraces = [
         '\[', '\]',
     ]
+
     def __init__(self, document):
         QSyntaxHighlighter.__init__(self, document)
 
@@ -96,9 +98,10 @@ class ChordProHighlighter (QSyntaxHighlighter):
         self.setCurrentBlockState(0)
 
         # Do multi-line strings
-#        in_multiline = self.match_multiline(text, *self.tri_single)
-#        if not in_multiline:
-#            in_multiline = self.match_multiline(text, *self.tri_double)
+
+    #        in_multiline = self.match_multiline(text, *self.tri_single)
+    #        if not in_multiline:
+    #            in_multiline = self.match_multiline(text, *self.tri_double)
 
 
     def match_multiline(self, text, delimiter, in_state, style):
