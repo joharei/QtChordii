@@ -37,7 +37,7 @@
         <enum>QAbstractItemView::SingleSelection</enum>
        </property>
       </widget>
-      <widget class="QTextEdit" name="textEdit"/>
+      <widget class="CustomTextEdit" name="textEdit"/>
      </widget>
     </item>
    </layout>
@@ -68,6 +68,11 @@
    <class>CustomTreeView</class>
    <extends>QTreeView</extends>
    <header>customtreeview.h</header>
+  </customwidget>
+  <customwidget>
+   <class>CustomTextEdit</class>
+   <extends>QTextEdit</extends>
+   <header>customtextedit.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

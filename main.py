@@ -25,7 +25,6 @@ import codecs
 from PySide import QtCore, QtGui
 from PySide.QtCore import QDir, QModelIndex
 from gui.warningmessagebox import WarningMessageBox
-from syntax import ChordProHighlighter
 from gui.mainwindow import Ui_MainWindow
 from PySide.QtGui import QFileSystemModel, QFileDialog, QMessageBox, QItemSelectionRange
 from which import which
@@ -77,41 +76,10 @@ class MainForm(QtGui.QMainWindow):
         self.connect(self.ui.fileView.selectionModel(),QtCore.SIGNAL("selectionChanged(QItemSelection, QItemSelection)"),self.selectionChanged)
 
     def setupEditor(self):
-        variableFormat = QtGui.QTextCharFormat()
-        variableFormat.setFontWeight(QtGui.QFont.Bold)
-        variableFormat.setForeground(QtCore.Qt.blue)
-#        self.highlighter.addMapping("\\b[A-Z_]+\\b", variableFormat)
-
-        singleLineCommentFormat = QtGui.QTextCharFormat()
-        singleLineCommentFormat.setBackground(QtGui.QColor("#77ff77"))
-#        self.highlighter.addMapping("#[^\n]*", singleLineCommentFormat)
-
-        quotationFormat = QtGui.QTextCharFormat()
-        quotationFormat.setBackground(QtCore.Qt.cyan)
-        quotationFormat.setForeground(QtCore.Qt.blue)
-#        self.highlighter.addMapping("\".*\"", quotationFormat)
-
-        functionFormat = QtGui.QTextCharFormat()
-        functionFormat.setFontItalic(True)
-        functionFormat.setForeground(QtCore.Qt.blue)
-#        self.highlighter.addMapping("\\b[a-z0-9_]+\\(.*\\)", functionFormat)
-
-
-
-        font = QtGui.QFont()
-        font.setFamily("Courier")
-        font.setFixedPitch(True)
-        font.setPointSize(10)
-
-        self.ui.textEdit.setFont(font)
-        self.highlighter = ChordProHighlighter(self.ui.textEdit.document())
-
-        self.ui.textEdit.setReadOnly(True)
-
-        self.ui.textEdit.setAcceptRichText(False)
-
+        self.ui.textEdit.setMain(self)
         self.ui.textEdit.textChanged.connect(self.setDirty)
         self.dirty = False
+
 
     def selectionChanged(self, newSelection, oldSelection):
 #        test = QItemSelectionRange()
@@ -332,11 +300,12 @@ class MainForm(QtGui.QMainWindow):
         notation = testTabFormat(self.ui.textEdit.toPlainText(), [enNotation])
         if notation is not None:
             res = QMessageBox.question(self, self.tr(self.appName),
-                self.tr("It seems this file is in the tab format.\n" + "Do you want to convert it to the ChordPro format?"),
-                QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
+                                       self.tr("It seems this file is in the tab format.\n" + "Do you want to convert it to the ChordPro format?"),
+                                       QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
             if res is QMessageBox.No:
                 return
             self.ui.textEdit.setText(tab2ChordPro(self.ui.textEdit.toPlainText()))
+
 
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
