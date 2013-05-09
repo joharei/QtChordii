@@ -22,7 +22,10 @@ def which(program):
     import os
     def is_exe(fpath):
         return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
-
+    for file in os.listdir("."):
+        if file.startswith("chordii"):
+            if is_exe(file):
+                return file
     fpath, fname = os.path.split(program)
     if fpath:
         if is_exe(program):
