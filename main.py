@@ -24,10 +24,12 @@ import sys
 import codecs
 from PySide import QtCore, QtGui
 from PySide.QtCore import QDir
+import gui.warningmessagebox
 from gui.warningmessagebox import WarningMessageBox
 from gui.mainwindow import Ui_MainWindow
 from PySide.QtGui import QFileSystemModel, QFileDialog, QMessageBox, QInputDialog
 from which import which
+import tab2chordpro.Transpose
 from tab2chordpro.Transpose import testTabFormat, tab2ChordPro, enNotation
 
 
@@ -274,8 +276,7 @@ class MainForm(QtGui.QMainWindow):
                                        QMessageBox.Open | QMessageBox.Cancel, QMessageBox.Open)
             if ret == QMessageBox.Open:
                 chordiiCommand = QFileDialog.getOpenFileName(self, self.tr("Specify the chordii executable"),
-                                                             QDir.homePath())
-
+                                                             QDir.homePath())[0]
         command = [chordiiCommand, "-i", "-L", "-p", "1"]
         if not any((inputFile, outputFile)):
             outDir = os.path.join(self.workingDir, "output")
