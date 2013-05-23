@@ -139,7 +139,8 @@ class MainForm(QtGui.QMainWindow):
         self.saveFile()
         if self.ui.textEdit.isReadOnly():
             self.ui.textEdit.setReadOnly(False)
-        self.ui.textEdit.setText('')
+        self.ui.textEdit.setText("{t:}\n{st:}")
+        self.ui.textEdit.setFocus()
         self.statusBar().showMessage('New file', 5000)
 
     def openFile(self, path=""):
