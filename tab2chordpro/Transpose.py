@@ -96,8 +96,8 @@ itNotation = Notation(
 
 frNotation = Notation(
     "frNotation",
-    _(u"French (Do R? Mi... Si)"),
-    ['Do', u'R?', 'Mi', 'Fa', 'Sol', 'La', 'Si'],
+    _("French (Do R? Mi... Si)"),
+    ['Do', 'R?', 'Mi', 'Fa', 'Sol', 'La', 'Si'],
     [
         (r'maj7', '7+'),
         (r'sus4', '4'),
@@ -112,8 +112,8 @@ frNotation = Notation(
 
 ptNotation = Notation(
     "ptNotation",
-    _(u"Portuguese (D? R? Mi... Si)"),
-    [u'D?', u'R?', 'Mi', u'F?', 'Sol', u'L?', 'Si'],
+    _("Portuguese (D? R? Mi... Si)"),
+    ['D?', 'R?', 'Mi', 'F?', 'Sol', 'L?', 'Si'],
     [
         (r'maj7', '7+'),
         (r'sus4', '4'),
