@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'qtchordii/mainwindow.ui'
 #
-# Created: Sat Aug  3 19:56:13 2013
+# Created: Sun Aug  4 20:15:47 2013
 #      by: pyside-uic 0.2.14 running on PySide 1.2.0
 #
 # WARNING! All changes made in this file will be lost!
@@ -28,6 +28,7 @@ class Ui_MainWindow(object):
         self.fileWidget.setSelectionMode(QtGui.QAbstractItemView.ContiguousSelection)
         self.fileWidget.setObjectName("fileWidget")
         self.textEdit = CustomTextEdit(self.splitter)
+        self.textEdit.setStyleSheet("font: 9pt \"DejaVu Sans Mono\";")
         self.textEdit.setObjectName("textEdit")
         self.gridLayout.addWidget(self.splitter, 0, 0, 1, 1)
         MainWindow.setCentralWidget(self.centralWidget)
