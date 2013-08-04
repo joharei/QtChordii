@@ -22,14 +22,13 @@ import os
 import subprocess
 import sys
 import codecs
+import glob
 from PySide import QtCore, QtGui
-from PySide.QtCore import QDir
-import gui.warningmessagebox
+from PySide.QtCore import QDir, Qt, QSize
 from gui.warningmessagebox import WarningMessageBox
 from gui.mainwindow import Ui_MainWindow
-from PySide.QtGui import QFileSystemModel, QFileDialog, QMessageBox, QInputDialog
+from PySide.QtGui import QFileSystemModel, QFileDialog, QMessageBox, QInputDialog, QListWidgetItem
 from which import which
-import tab2chordpro.Transpose
 from tab2chordpro.Transpose import testTabFormat, tab2ChordPro, enNotation
 
 
@@ -49,9 +48,11 @@ class MainForm(QtGui.QMainWindow):
         self.workingDir = args.workingdir
 
         if self.workingDir is None:
+            self.selectDir()
+        else:
             self.openDir()
 
-        self.setupFileTree()
+        self.setupFileWidget()
         self.setupEditor()
         currentSizes = self.ui.splitter.sizes()
         self.ui.splitter.setSizes([300, currentSizes[1] + currentSizes[0] - 300])
@@ -65,31 +66,22 @@ class MainForm(QtGui.QMainWindow):
         args = parser.parse_args()
         return args
 
-    def setupFileTree(self):
-        self.model = QFileSystemModel()
-        self.model.setRootPath(self.workingDir)
-        self.model.setNameFilters(self.tr("Chordii files (*.cho *.crd)"))
-        self.model.setFilter(QDir.Files)
-        self.ui.fileView.setModel(self.model)
-        self.ui.fileView.setRootIndex(self.model.index(self.workingDir))
-        self.ui.fileView.setColumnHidden(2, True)
-        self.ui.fileView.setColumnWidth(0, 150)
-        self.ui.fileView.resizeColumnToContents(1)
-        self.connect(self.ui.fileView.selectionModel(),
-                     QtCore.SIGNAL("selectionChanged(QItemSelection, QItemSelection)"), self.selectionChanged)
+    def setupFileWidget(self):
+        self.ui.fileWidget.itemSelectionChanged.connect(self.selectionChanged)
 
     def setupEditor(self):
         self.ui.textEdit.setMain(self)
         self.ui.textEdit.textChanged.connect(self.setDirty)
         self.dirty = False
 
-    def selectionChanged(self, newSelection, oldSelection):
+    def selectionChanged(self):
 #        test = QItemSelectionRange()
 #        test.top()
-        if self.okToContinue():
-            self.openFile(self.model.filePath(newSelection.indexes()[0]))
-        else:
-            self.model.index = oldSelection
+        if len(self.ui.fileWidget.selectedItems()) == 1:
+            if self.okToContinue():
+                self.openFile(self.ui.fileWidget.selectedItems()[0].data(Qt.UserRole))
+            # else:
+            #     self.ui.fileWidget.setSelection(oldSelection)
 
     def setDirty(self):
         """
@@ -197,10 +189,19 @@ class MainForm(QtGui.QMainWindow):
             self.statusBar().showMessage('SaveAs file' + fname, 8000)
             self.clearDirty()
 
-    def openDir(self):
+    def selectDir(self):
         self.workingDir = QFileDialog.getExistingDirectory(self, self.tr("Choose working directory"),
                                                            QDir.homePath() if self.workingDir is None else "")
+        self.openDir()
+
+    def openDir(self):
         print(self.workingDir)
+        for fileType in ('cho', 'crd'):
+            for file in glob.iglob('{}/*.{}'.format(self.workingDir, fileType)):
+                item = QListWidgetItem(os.path.basename(file))
+                item.setData(Qt.UserRole, file)
+                item.setSizeHint(QSize(0, 30))
+                self.ui.fileWidget.addItem(item)
 
     def setupFileMenu(self):
         fileMenu = QtGui.QMenu(self.tr("&File"), self)
@@ -213,7 +214,7 @@ class MainForm(QtGui.QMainWindow):
 
         openFileAct = QtGui.QAction(self.tr("&Open Directory..."), self)
         openFileAct.setShortcut(QtGui.QKeySequence.Open)
-        openFileAct.triggered.connect(self.openDir)
+        openFileAct.triggered.connect(self.selectDir)
         fileMenu.addAction(openFileAct)
 
         saveFileAct = QtGui.QAction(self.tr("&Save"), self)
@@ -284,13 +285,11 @@ class MainForm(QtGui.QMainWindow):
             outputFile = os.path.join(outDir, "songbook.ps")
             if not os.path.exists(outDir):
                 os.makedirs(outDir)
-            parent = self.model.index(self.workingDir)
-            for i in range(self.model.rowCount(parent)):
-                row = self.model.index(i, 0, parent)
-                path = self.model.fileInfo(row).absoluteFilePath()
-                command.append(path)
+            for i in range(self.ui.fileWidget.count()):
+                command.append(self.ui.fileWidget.item(i).data(Qt.UserRole))
         command.append("-o")
         command.append(outputFile)
+        print(command)
         try:
             response = subprocess.check_output(command, stderr=subprocess.STDOUT)
             if response is not None and response == b'':

@@ -20,7 +20,7 @@
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
       </property>
-      <widget class="CustomTreeView" name="fileView">
+      <widget class="QListWidget" name="fileWidget">
        <property name="acceptDrops">
         <bool>true</bool>
        </property>
@@ -34,7 +34,7 @@
         <enum>Qt::MoveAction</enum>
        </property>
        <property name="selectionMode">
-        <enum>QAbstractItemView::SingleSelection</enum>
+        <enum>QAbstractItemView::ContiguousSelection</enum>
        </property>
       </widget>
       <widget class="CustomTextEdit" name="textEdit"/>
@@ -64,11 +64,6 @@
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
-  <customwidget>
-   <class>CustomTreeView</class>
-   <extends>QTreeView</extends>
-   <header>customtreeview.h</header>
-  </customwidget>
   <customwidget>
    <class>CustomTextEdit</class>
    <extends>QTextEdit</extends>

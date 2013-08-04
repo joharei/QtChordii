@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'gui/qtchordii/mainwindow.ui'
+# Form implementation generated from reading ui file 'qtchordii/mainwindow.ui'
 #
-# Created: Wed Mar  6 11:59:40 2013
-#      by: pyside-uic 0.2.13 running on PySide 1.1.1
+# Created: Sat Aug  3 19:56:13 2013
+#      by: pyside-uic 0.2.14 running on PySide 1.2.0
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -20,13 +20,13 @@ class Ui_MainWindow(object):
         self.splitter = QtGui.QSplitter(self.centralWidget)
         self.splitter.setOrientation(QtCore.Qt.Horizontal)
         self.splitter.setObjectName("splitter")
-        self.fileView = CustomTreeView(self.splitter)
-        self.fileView.setAcceptDrops(True)
-        self.fileView.setDragEnabled(True)
-        self.fileView.setDragDropMode(QtGui.QAbstractItemView.InternalMove)
-        self.fileView.setDefaultDropAction(QtCore.Qt.MoveAction)
-        self.fileView.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
-        self.fileView.setObjectName("fileView")
+        self.fileWidget = QtGui.QListWidget(self.splitter)
+        self.fileWidget.setAcceptDrops(True)
+        self.fileWidget.setDragEnabled(True)
+        self.fileWidget.setDragDropMode(QtGui.QAbstractItemView.InternalMove)
+        self.fileWidget.setDefaultDropAction(QtCore.Qt.MoveAction)
+        self.fileWidget.setSelectionMode(QtGui.QAbstractItemView.ContiguousSelection)
+        self.fileWidget.setObjectName("fileWidget")
         self.textEdit = CustomTextEdit(self.splitter)
         self.textEdit.setObjectName("textEdit")
         self.gridLayout.addWidget(self.splitter, 0, 0, 1, 1)
@@ -48,5 +48,4 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QtGui.QApplication.translate("MainWindow", "QtChordii", None, QtGui.QApplication.UnicodeUTF8))
 
-from gui.customtreeview import CustomTreeView
 from gui.customtextedit import CustomTextEdit
