@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'qtchordii/mainwindow.ui'
 #
-# Created: Sun Aug  4 20:15:47 2013
+# Created: Mon Aug  5 18:44:47 2013
 #      by: pyside-uic 0.2.14 running on PySide 1.2.0
 #
 # WARNING! All changes made in this file will be lost!
@@ -42,11 +42,36 @@ class Ui_MainWindow(object):
         self.statusBar = QtGui.QStatusBar(MainWindow)
         self.statusBar.setObjectName("statusBar")
         MainWindow.setStatusBar(self.statusBar)
+        self.actionNew = QtGui.QAction(MainWindow)
+        self.actionNew.setObjectName("actionNew")
+        self.actionOpen = QtGui.QAction(MainWindow)
+        self.actionOpen.setObjectName("actionOpen")
+        self.actionSave = QtGui.QAction(MainWindow)
+        self.actionSave.setObjectName("actionSave")
+        self.actionRun = QtGui.QAction(MainWindow)
+        self.actionRun.setObjectName("actionRun")
+        self.mainToolBar.addAction(self.actionNew)
+        self.mainToolBar.addAction(self.actionOpen)
+        self.mainToolBar.addAction(self.actionSave)
+        self.mainToolBar.addSeparator()
+        self.mainToolBar.addAction(self.actionRun)
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QtGui.QApplication.translate("MainWindow", "QtChordii", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionNew.setText(QtGui.QApplication.translate("MainWindow", "New", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionNew.setToolTip(QtGui.QApplication.translate("MainWindow", "New Song", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionNew.setShortcut(QtGui.QApplication.translate("MainWindow", "Ctrl+N", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionOpen.setText(QtGui.QApplication.translate("MainWindow", "Open", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionOpen.setToolTip(QtGui.QApplication.translate("MainWindow", "Open Directory", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionOpen.setShortcut(QtGui.QApplication.translate("MainWindow", "Ctrl+O", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionSave.setText(QtGui.QApplication.translate("MainWindow", "Save", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionSave.setToolTip(QtGui.QApplication.translate("MainWindow", "Save Song", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionSave.setShortcut(QtGui.QApplication.translate("MainWindow", "Ctrl+S", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionRun.setText(QtGui.QApplication.translate("MainWindow", "Run", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionRun.setToolTip(QtGui.QApplication.translate("MainWindow", "Run Chordii", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionRun.setShortcut(QtGui.QApplication.translate("MainWindow", "Ctrl+R", None, QtGui.QApplication.UnicodeUTF8))
 
 from gui.customtextedit import CustomTextEdit

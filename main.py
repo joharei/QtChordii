@@ -27,7 +27,7 @@ from PySide import QtCore, QtGui
 from PySide.QtCore import QDir, Qt, QSize
 from gui.warningmessagebox import WarningMessageBox
 from gui.mainwindow import Ui_MainWindow
-from PySide.QtGui import QFileSystemModel, QFileDialog, QMessageBox, QInputDialog, QListWidgetItem
+from PySide.QtGui import QFileSystemModel, QFileDialog, QMessageBox, QInputDialog, QListWidgetItem, QIcon
 from which import which
 from tab2chordpro.Transpose import testTabFormat, tab2ChordPro, enNotation
 
@@ -57,6 +57,7 @@ class MainForm(QtGui.QMainWindow):
         currentSizes = self.ui.splitter.sizes()
         self.ui.splitter.setSizes([300, currentSizes[1] + currentSizes[0] - 300])
         self.setupFileMenu()
+        self.setupToolBar()
 
     def parseArguments(self):
         parser = argparse.ArgumentParser(
@@ -65,6 +66,16 @@ class MainForm(QtGui.QMainWindow):
                             help='the directory containing Chordii files')
         args = parser.parse_args()
         return args
+
+    def setupToolBar(self):
+        self.ui.actionNew.setIcon(QIcon.fromTheme('document-new'))
+        self.ui.actionNew.triggered.connect(self.newFile)
+        self.ui.actionOpen.setIcon(QIcon.fromTheme('folder-open'))
+        self.ui.actionOpen.triggered.connect(self.selectDir)
+        self.ui.actionSave.setIcon(QIcon.fromTheme('document-save'))
+        self.ui.actionSave.triggered.connect(self.saveFile)
+        self.ui.actionRun.setIcon(QIcon.fromTheme('system-run'))
+        self.ui.actionRun.triggered.connect(self.runChordii)
 
     def setupFileWidget(self):
         self.ui.fileWidget.itemSelectionChanged.connect(self.selectionChanged)
