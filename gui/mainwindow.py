@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'qtchordii/mainwindow.ui'
 #
-# Created: Mon Aug  5 18:44:47 2013
+# Created: Mon Aug  5 18:52:44 2013
 #      by: pyside-uic 0.2.14 running on PySide 1.2.0
 #
 # WARNING! All changes made in this file will be lost!
@@ -25,6 +25,7 @@ class Ui_MainWindow(object):
         self.fileWidget.setDragEnabled(True)
         self.fileWidget.setDragDropMode(QtGui.QAbstractItemView.InternalMove)
         self.fileWidget.setDefaultDropAction(QtCore.Qt.MoveAction)
+        self.fileWidget.setAlternatingRowColors(True)
         self.fileWidget.setSelectionMode(QtGui.QAbstractItemView.ContiguousSelection)
         self.fileWidget.setObjectName("fileWidget")
         self.textEdit = CustomTextEdit(self.splitter)
