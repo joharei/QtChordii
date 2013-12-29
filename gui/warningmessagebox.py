@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with QtChordii.  If not, see <http://www.gnu.org/licenses/>.
 
-from PySide.QtGui import *
+from PyQt4.QtGui import *
 
 class WarningMessageBox(QMessageBox):
 

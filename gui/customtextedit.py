@@ -15,8 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with QtChordii.  If not, see <http://www.gnu.org/licenses/>.
 
-from PySide import QtGui
-from PySide.QtGui import QTextEdit
+from PyQt4 import QtGui
+from PyQt4.QtGui import QTextEdit
 from syntax import ChordProHighlighter
 
 class CustomTextEdit(QTextEdit):

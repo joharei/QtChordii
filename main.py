@@ -23,11 +23,10 @@ import subprocess
 import sys
 import codecs
 import glob
-from PySide import QtCore, QtGui
-from PySide.QtCore import QDir, Qt, QSize
+from PyQt4 import QtCore, QtGui, uic
+from PyQt4.QtCore import QDir, Qt, QSize
 from gui.warningmessagebox import WarningMessageBox
-from gui.mainwindow import Ui_MainWindow
-from PySide.QtGui import QFileSystemModel, QFileDialog, QMessageBox, QInputDialog, QListWidgetItem, QIcon
+from PyQt4.QtGui import QFileSystemModel, QFileDialog, QMessageBox, QInputDialog, QListWidgetItem, QIcon
 from which import which
 from tab2chordpro.Transpose import testTabFormat, tab2ChordPro, enNotation
 
@@ -35,8 +34,7 @@ from tab2chordpro.Transpose import testTabFormat, tab2ChordPro, enNotation
 class MainForm(QtGui.QMainWindow):
     def __init__(self, parent=None):
         QtGui.QMainWindow.__init__(self, parent)
-        self.ui = Ui_MainWindow()
-        self.ui.setupUi(self)
+        self.ui = uic.loadUi('gui/qtchordii/mainwindow.ui', self)
         self.show()
 
         self.appName = "QtChordii"
@@ -216,7 +214,7 @@ class MainForm(QtGui.QMainWindow):
 
     def setupFileMenu(self):
         fileMenu = QtGui.QMenu(self.tr("&File"), self)
-        self.menuBar().addMenu(fileMenu)
+        self.menuBar.addMenu(fileMenu)
 
         newFileAct = QtGui.QAction(self.tr("&New..."), self)
         newFileAct.setShortcut(QtGui.QKeySequence.New)
