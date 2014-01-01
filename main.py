@@ -53,9 +53,10 @@ class MainForm(QtGui.QMainWindow):
         self.setupFileWidget()
         self.setupEditor()
         currentSizes = self.ui.splitter.sizes()
-        self.ui.splitter.setSizes([300, currentSizes[1] + currentSizes[0] - 300])
+        self.ui.splitter.setSizes([400, currentSizes[1] + currentSizes[0], currentSizes[2] + currentSizes[1] + currentSizes[0]])
         self.setupFileMenu()
         self.setupToolBar()
+        self.setGeometry(0,0,1600, 800)
 
     def parseArguments(self):
         parser = argparse.ArgumentParser(
@@ -157,6 +158,15 @@ class MainForm(QtGui.QMainWindow):
             if inStream:
                 self.ui.textEdit.setPlainText(inStream.read())
         self.clearDirty()
+
+        self.temp_dir = os.path.join(self.workingDir, "temp")
+        if not os.path.exists(self.temp_dir):
+            os.makedirs(self.temp_dir)
+        out_file = os.path.join(self.temp_dir, '{}.ps'.format(os.path.splitext(os.path.basename(self.fileName))[0]))
+
+        self.runChordii(self.fileName, out_file, True)
+
+        self.ui.scrollArea.load(self.ps2pdf(out_file))
         self.updateStatus('File opened.')
         self.tab2chordpro()
 
@@ -272,7 +282,7 @@ class MainForm(QtGui.QMainWindow):
         saveFile = open(os.path.join(outDir, "songbook.cho"), "w")
         saveFile.write(saveString)
 
-    def runChordii(self, inputFile=None, outputFile=None):
+    def runChordii(self, inputFile=None, outputFile=None, preview=False):
         """
         Run Chordii to produce output.
         """
@@ -288,33 +298,38 @@ class MainForm(QtGui.QMainWindow):
             if ret == QMessageBox.Open:
                 chordiiCommand = QFileDialog.getOpenFileName(self, self.tr("Specify the chordii executable"),
                                                              QDir.homePath())[0]
-        command = [chordiiCommand, "-i", "-L", "-p", "1"]
-        if not any((inputFile, outputFile)):
+        command = [chordiiCommand, "-i", "-L", "-p", "1"] if not preview else [chordiiCommand]
+        if not outputFile:
             outDir = os.path.join(self.workingDir, "output")
             outputFile = os.path.join(outDir, "songbook.ps")
             if not os.path.exists(outDir):
                 os.makedirs(outDir)
+        if not inputFile:
             for i in range(self.ui.fileWidget.count()):
                 command.append(self.ui.fileWidget.item(i).data(Qt.UserRole))
+        else:
+            command.append(inputFile)
         command.append("-o")
         command.append(outputFile)
         print(command)
         try:
             response = subprocess.check_output(command, stderr=subprocess.STDOUT)
-            if response is not None and response == b'':
-                QMessageBox.information(self, self.tr(self.appName + " - Chordii was successful"),
-                                        self.tr("Chordii compiled the songbook without warnings!"))
-            elif response is not None:
-                msgBox = WarningMessageBox()
-                msgBox.setWindowTitle(self.tr(self.appName + " - Chordii warning"))
-                msgBox.setText(self.tr("Chordii exited with warnings."))
-                msgBox.setDetailedText(self.tr(bytearray(response).decode()))
-                msgBox.setIcon(QMessageBox.Warning)
-                msgBox.exec_()
+            if not preview:
+                if response is not None and response == b'':
+                    QMessageBox.information(self, self.tr(self.appName + " - Chordii was successful"),
+                                            self.tr("Chordii compiled the songbook without warnings!"))
+                elif response is not None:
+                    msgBox = WarningMessageBox()
+                    msgBox.setWindowTitle(self.tr(self.appName + " - Chordii warning"))
+                    msgBox.setText(self.tr("Chordii exited with warnings."))
+                    msgBox.setDetailedText(self.tr(bytearray(response).decode()))
+                    msgBox.setIcon(QMessageBox.Warning)
+                    msgBox.exec_()
         except subprocess.CalledProcessError as e:
-            QMessageBox.critical(self, self.tr(self.appName + " - Chordii problem"),
-                                 self.tr("Chordii crashed while compiling. Please check your syntax.\
-                                         Tip: This is probably due to an incorrect chord definition."))
+            if not preview:
+                QMessageBox.critical(self, self.tr(self.appName + " - Chordii problem"),
+                                     self.tr("Chordii crashed while compiling. Please check your syntax.\
+                                             Tip: This is probably due to an incorrect chord definition."))
 
     def tab2chordpro(self):
         notation = testTabFormat(self.ui.textEdit.toPlainText(), [enNotation])
@@ -323,13 +338,17 @@ class MainForm(QtGui.QMainWindow):
                                        self.tr("It seems this file is in the tab format.\n" +
                                                "Do you want to convert it to the ChordPro format?"),
                                        QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
-            if res is QMessageBox.No:
+            if res == QMessageBox.No:
                 return
             self.ui.textEdit.setText(tab2ChordPro(self.ui.textEdit.toPlainText()))
+
+    def ps2pdf(self, file):
+        out_file = '{}.pdf'.format(os.path.splitext(file)[0])
+        print(subprocess.check_output(['ps2pdf', file, out_file], stderr=subprocess.STDOUT))
+        return out_file
 
 
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
     myapp = MainForm()
-#    myapp.show()
     sys.exit(app.exec_())

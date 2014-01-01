@@ -45,6 +45,21 @@
         <string notr="true">font: 9pt &quot;DejaVu Sans Mono&quot;;</string>
        </property>
       </widget>
+      <widget class="PDFViewer" name="scrollArea">
+       <property name="widgetResizable">
+        <bool>true</bool>
+       </property>
+       <widget class="QWidget" name="scrollAreaWidgetContents">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>0</y>
+          <width>70</width>
+          <height>493</height>
+         </rect>
+        </property>
+       </widget>
+      </widget>
      </widget>
     </item>
    </layout>
@@ -124,6 +139,12 @@
    <class>CustomTextEdit</class>
    <extends>QTextEdit</extends>
    <header>gui.customtextedit.h</header>
+  </customwidget>
+  <customwidget>
+   <class>PDFViewer</class>
+   <extends>QScrollArea</extends>
+   <header>gui.pdfviewer.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>
