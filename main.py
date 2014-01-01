@@ -226,19 +226,19 @@ class MainForm(QtGui.QMainWindow):
         fileMenu = QtGui.QMenu(self.tr("&File"), self)
         self.menuBar.addMenu(fileMenu)
 
-        newFileAct = QtGui.QAction(self.tr("&New..."), self)
+        # newFileAct = QtGui.QAction(self.tr("&New..."), self)
+        newFileAct = self.ui.actionNew
         newFileAct.setShortcut(QtGui.QKeySequence.New)
-        newFileAct.triggered.connect(self.newFile)
         fileMenu.addAction(newFileAct)
 
-        openFileAct = QtGui.QAction(self.tr("&Open Directory..."), self)
+        # openFileAct = QtGui.QAction(self.tr("&Open Directory..."), self)
+        openFileAct = self.ui.actionOpen
         openFileAct.setShortcut(QtGui.QKeySequence.Open)
-        openFileAct.triggered.connect(self.selectDir)
         fileMenu.addAction(openFileAct)
 
-        saveFileAct = QtGui.QAction(self.tr("&Save"), self)
+        # saveFileAct = QtGui.QAction(self.tr("&Save"), self)
+        saveFileAct = self.ui.actionSave
         saveFileAct.setShortcut(QtGui.QKeySequence.Save)
-        saveFileAct.triggered.connect(self.saveFile)
         fileMenu.addAction(saveFileAct)
 
         saveFileAsAct = QtGui.QAction(self.tr("Save as..."), self)
@@ -253,7 +253,8 @@ class MainForm(QtGui.QMainWindow):
         saveProjectFileAct.triggered.connect(self.saveProject)
         fileMenu.addAction(saveProjectFileAct)
 
-        exportFileAct = QtGui.QAction(self.tr("&Export songbook to PostScript..."), self)
+        # exportFileAct = QtGui.QAction(self.tr("&Export songbook to PostScript..."), self)
+        exportFileAct = self.ui.actionRun
         exportFileAct.triggered.connect(self.runChordii)
         fileMenu.addAction(exportFileAct)
 
