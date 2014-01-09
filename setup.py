@@ -4,8 +4,8 @@ from cx_Freeze import setup, Executable
 
 includes = ['syntax', 'atexit']
 includefiles = ['gui\warningmessagebox.py',
-                'gui\mainwindow.py',
                 'gui\customtextedit.py',
+                'gui\pdfviewer.py'
                 'tab2chordpro\Transpose.py']
 #includes = []
 
@@ -30,5 +30,5 @@ setup(
     executables = [Executable("main.py",
                               shortcutName="QtChordii",
                               shortcutDir="DesktopFolder",
-                              base = base)]
+                              base = base)], requires=['PyQt4']
 )

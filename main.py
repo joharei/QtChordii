@@ -26,7 +26,7 @@ import glob
 from PyQt4 import QtCore, QtGui, uic
 from PyQt4.QtCore import QDir, Qt, QSize
 from gui.warningmessagebox import WarningMessageBox
-from PyQt4.QtGui import QFileSystemModel, QFileDialog, QMessageBox, QInputDialog, QListWidgetItem, QIcon
+from PyQt4.QtGui import QFileDialog, QMessageBox, QInputDialog, QListWidgetItem, QIcon
 from which import which
 from tab2chordpro.Transpose import testTabFormat, tab2ChordPro, enNotation
 
@@ -37,63 +37,89 @@ class MainForm(QtGui.QMainWindow):
         self.ui = uic.loadUi('gui/qtchordii/mainwindow.ui', self)
         self.show()
 
-        self.appName = "QtChordii"
+        self.app_name = "QtChordii"
 
-        args = self.parseArguments()
+        args = parse_arguments()
 
-#        self.highlighter = Highlighter()
+        #        self.highlighter = Highlighter()
 
-        self.workingDir = args.workingdir
+        self.working_dir = args.workingdir
 
-        if self.workingDir is None:
+        if self.working_dir is None:
             self.selectDir()
         else:
             self.openDir()
 
-        self.setupFileWidget()
-        self.setupEditor()
-        currentSizes = self.ui.splitter.sizes()
-        self.ui.splitter.setSizes([400, currentSizes[1] + currentSizes[0], currentSizes[2] + currentSizes[1] + currentSizes[0]])
-        self.setupFileMenu()
-        self.setupToolBar()
-        self.setGeometry(0,0,1600, 800)
-
-    def parseArguments(self):
-        parser = argparse.ArgumentParser(
-            description='A Qt GUI for Chordii.')
-        parser.add_argument('-d', '--workingdir',
-                            help='the directory containing Chordii files')
-        args = parser.parse_args()
-        return args
-
-    def setupToolBar(self):
-        self.ui.actionNew.setIcon(QIcon.fromTheme('document-new'))
-        self.ui.actionNew.triggered.connect(self.newFile)
-        self.ui.actionOpen.setIcon(QIcon.fromTheme('folder-open'))
-        self.ui.actionOpen.triggered.connect(self.selectDir)
-        self.ui.actionSave.setIcon(QIcon.fromTheme('document-save'))
-        self.ui.actionSave.triggered.connect(self.saveFile)
-        self.ui.actionRun.setIcon(QIcon.fromTheme('system-run'))
-        self.ui.actionRun.triggered.connect(self.runChordii)
-
-    def setupFileWidget(self):
-        self.ui.fileWidget.itemSelectionChanged.connect(self.selectionChanged)
-
-    def setupEditor(self):
-        self.ui.textEdit.setMain(self)
-        self.ui.textEdit.textChanged.connect(self.setDirty)
+        self.setup_file_widget()
+        self.setup_editor()
+        current_sizes = self.ui.splitter.sizes()
+        self.ui.splitter.setSizes(
+            [400, current_sizes[1] + current_sizes[0], current_sizes[2] + current_sizes[1] + current_sizes[0]])
+        self.setup_file_menu()
+        self.setGeometry(0, 0, 1600, 800)
         self.dirty = False
 
-    def selectionChanged(self):
-#        test = QItemSelectionRange()
-#        test.top()
-        if len(self.ui.fileWidget.selectedItems()) == 1:
-            if self.okToContinue():
-                self.openFile(self.ui.fileWidget.selectedItems()[0].data(Qt.UserRole))
-            # else:
-            #     self.ui.fileWidget.setSelection(oldSelection)
+    def setup_file_menu(self):
+        file_menu = QtGui.QMenu(self.tr("&File"), self)
+        self.menuBar.addMenu(file_menu)
 
-    def setDirty(self):
+        # new_file_act = QtGui.QAction(self.tr("&New..."), self)
+        new_file_act = self.ui.actionNew
+        new_file_act.setShortcut(QtGui.QKeySequence.New)
+        new_file_act.setIcon(QIcon.fromTheme('document-new'))
+        new_file_act.triggered.connect(self.newFile)
+        file_menu.addAction(new_file_act)
+
+        # open_file_act = QtGui.QAction(self.tr("&Open Directory..."), self)
+        open_file_act = self.ui.actionOpen
+        open_file_act.setShortcut(QtGui.QKeySequence.Open)
+        open_file_act.setIcon(QIcon.fromTheme('folder-open'))
+        open_file_act.triggered.connect(self.selectDir)
+        file_menu.addAction(open_file_act)
+
+        # save_file_act = QtGui.QAction(self.tr("&Save"), self)
+        save_file_act = self.ui.actionSave
+        save_file_act.setShortcut(QtGui.QKeySequence.Save)
+        save_file_act.setIcon(QIcon.fromTheme('document-save'))
+        save_file_act.triggered.connect(self.saveFile)
+        file_menu.addAction(save_file_act)
+
+        save_file_as_act = QtGui.QAction(self.tr("Save as..."), self)
+        save_file_as_act.setShortcut(QtGui.QKeySequence.SaveAs)
+        save_file_as_act.triggered.connect(self.saveFileAs)
+        file_menu.addAction(save_file_as_act)
+
+        file_menu.addSeparator()
+
+        save_project_file_act = QtGui.QAction(self.tr("Save &project"), self)
+        #        save_project_file_act.setShortcut(QtGui.QKeySequence.Save)
+        save_project_file_act.triggered.connect(self.saveProject)
+        file_menu.addAction(save_project_file_act)
+
+        # export_file_act = QtGui.QAction(self.tr("&Export songbook to PostScript..."), self)
+        export_file_act = self.ui.actionRun
+        export_file_act.triggered.connect(self.runChordii)
+        export_file_act.setIcon(QIcon.fromTheme('system-run'))
+        file_menu.addAction(export_file_act)
+
+        file_menu.addSeparator()
+
+        file_menu.addAction(self.tr("E&xit"), QtGui.qApp, QtCore.SLOT("quit()"),
+                            QtGui.QKeySequence.Quit)
+
+    def setup_file_widget(self):
+        self.ui.fileWidget.itemSelectionChanged.connect(self.selection_changed)
+
+    def setup_editor(self):
+        self.ui.textEdit.setMain(self)
+        self.ui.textEdit.textChanged.connect(self.set_dirty)
+
+    def selection_changed(self):
+        if len(self.ui.fileWidget.selectedItems()) == 1:
+            if self.ok_to_continue():
+                self.openFile(self.ui.fileWidget.selectedItems()[0].data(Qt.UserRole))
+
+    def set_dirty(self):
         """
         On change of text in textEdit window, set the flag "dirty" to True
         """
@@ -101,29 +127,29 @@ class MainForm(QtGui.QMainWindow):
             if self.dirty:
                 return True
             self.dirty = True
-            self.updateStatus('self.dirty set to True')
+            self.update_status('self.dirty set to True')
 
-    def clearDirty(self):
+    def clear_dirty(self):
         """Clear the dirty."""
         self.dirty = False
 
-    def updateStatus(self, message):
+    def update_status(self, message):
         """
         Keep status current.
         """
         if hasattr(self, "fileName") and self.fileName is not None:
-            flbase = os.path.basename(self.fileName)
-            self.setWindowTitle(str(self.appName + " - " + flbase + "[*]"))
+            file_base = os.path.basename(self.fileName)
+            self.setWindowTitle(str(self.app_name + " - " + file_base + "[*]"))
             self.ui.statusBar.showMessage(message, 5000)
             self.setWindowModified(self.dirty)
 
-    def okToContinue(self):
+    def ok_to_continue(self):
         """
         Boolean result invocation method.
         """
         if self.dirty:
             reply = QMessageBox.question(self,
-                                         self.appName + " - Unsaved Changes",
+                                         self.app_name + " - Unsaved Changes",
                                          "Save unsaved changes?",
                                          QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel)
             if reply == QMessageBox.Cancel:
@@ -133,13 +159,13 @@ class MainForm(QtGui.QMainWindow):
         return True
 
     def newFile(self):
-        if not self.okToContinue():
+        if not self.ok_to_continue():
             return
         self.fileName = QInputDialog.getText(self, self.tr("New File..."),
                                              self.tr("Enter name for new file (without extension):"))
         if not self.fileName[1]:
             return
-        self.fileName = os.path.join(self.workingDir, str(self.fileName[0]) + ".cho")
+        self.fileName = os.path.join(self.working_dir, str(self.fileName[0]) + ".cho")
         self.saveFile()
         if self.ui.textEdit.isReadOnly():
             self.ui.textEdit.setReadOnly(False)
@@ -157,9 +183,9 @@ class MainForm(QtGui.QMainWindow):
             inStream = codecs.open(self.fileName, "r", "ISO-8859-1")
             if inStream:
                 self.ui.textEdit.setPlainText(inStream.read())
-        self.clearDirty()
+        self.clear_dirty()
 
-        self.temp_dir = os.path.join(self.workingDir, "temp")
+        self.temp_dir = os.path.join(self.working_dir, "temp")
         if not os.path.exists(self.temp_dir):
             os.makedirs(self.temp_dir)
         out_file = os.path.join(self.temp_dir, '{}.ps'.format(os.path.splitext(os.path.basename(self.fileName))[0]))
@@ -167,7 +193,7 @@ class MainForm(QtGui.QMainWindow):
         self.runChordii(self.fileName, out_file, True)
 
         self.ui.scrollArea.load(self.ps2pdf(out_file))
-        self.updateStatus('File opened.')
+        self.update_status('File opened.')
         self.tab2chordpro()
 
     def saveFile(self):
@@ -185,8 +211,8 @@ class MainForm(QtGui.QMainWindow):
             if tempText:
                 fl.write(tempText)
                 fl.close()
-                self.clearDirty()
-                self.updateStatus('Saved file')
+                self.clear_dirty()
+                self.update_status('Saved file')
                 return True
             else:
                 self.ui.statusBar.showMessage('Failed to save ...', 5000)
@@ -196,7 +222,7 @@ class MainForm(QtGui.QMainWindow):
         """
         Save file with a different name and maybe different directory.
         """
-        path = self.fileName if self.fileName is not None else self.workingDir
+        path = self.fileName if self.fileName is not None else self.working_dir
         fname = QFileDialog.getSaveFileName(self,
                                             self.tr("Save as..."), path, self.tr("Chordii files (*.cho *.crd)"))[0]
         if fname:
@@ -206,69 +232,28 @@ class MainForm(QtGui.QMainWindow):
             self.fileName = fname
             self.saveFile()
             self.statusBar().showMessage('SaveAs file' + fname, 8000)
-            self.clearDirty()
+            self.clear_dirty()
 
     def selectDir(self):
-        self.workingDir = QFileDialog.getExistingDirectory(self, self.tr("Choose working directory"),
-                                                           QDir.homePath() if self.workingDir is None else "")
+        self.working_dir = QFileDialog.getExistingDirectory(self, self.tr("Choose working directory"),
+                                                            QDir.homePath() if self.working_dir is None else "")
         self.openDir()
 
     def openDir(self):
-        print(self.workingDir)
+        print(self.working_dir)
         for fileType in ('cho', 'crd'):
-            for file in glob.iglob('{}/*.{}'.format(self.workingDir, fileType)):
+            for file in glob.iglob('{}/*.{}'.format(self.working_dir, fileType)):
                 item = QListWidgetItem(os.path.basename(file))
                 item.setData(Qt.UserRole, file)
                 item.setSizeHint(QSize(0, 30))
                 self.ui.fileWidget.addItem(item)
-
-    def setupFileMenu(self):
-        fileMenu = QtGui.QMenu(self.tr("&File"), self)
-        self.menuBar.addMenu(fileMenu)
-
-        # newFileAct = QtGui.QAction(self.tr("&New..."), self)
-        newFileAct = self.ui.actionNew
-        newFileAct.setShortcut(QtGui.QKeySequence.New)
-        fileMenu.addAction(newFileAct)
-
-        # openFileAct = QtGui.QAction(self.tr("&Open Directory..."), self)
-        openFileAct = self.ui.actionOpen
-        openFileAct.setShortcut(QtGui.QKeySequence.Open)
-        fileMenu.addAction(openFileAct)
-
-        # saveFileAct = QtGui.QAction(self.tr("&Save"), self)
-        saveFileAct = self.ui.actionSave
-        saveFileAct.setShortcut(QtGui.QKeySequence.Save)
-        fileMenu.addAction(saveFileAct)
-
-        saveFileAsAct = QtGui.QAction(self.tr("Save as..."), self)
-        saveFileAsAct.setShortcut(QtGui.QKeySequence.SaveAs)
-        saveFileAsAct.triggered.connect(self.saveFileAs)
-        fileMenu.addAction(saveFileAsAct)
-
-        fileMenu.addSeparator()
-
-        saveProjectFileAct = QtGui.QAction(self.tr("Save &project"), self)
-#        saveProjectFileAct.setShortcut(QtGui.QKeySequence.Save)
-        saveProjectFileAct.triggered.connect(self.saveProject)
-        fileMenu.addAction(saveProjectFileAct)
-
-        # exportFileAct = QtGui.QAction(self.tr("&Export songbook to PostScript..."), self)
-        exportFileAct = self.ui.actionRun
-        exportFileAct.triggered.connect(self.runChordii)
-        fileMenu.addAction(exportFileAct)
-
-        fileMenu.addSeparator()
-
-        fileMenu.addAction(self.tr("E&xit"), QtGui.qApp, QtCore.SLOT("quit()"),
-                           QtGui.QKeySequence.Quit)
 
     def saveProject(self):
         """
         Save all the song files as one continuous file for passing to Chordii.
         """
         saveString = ""
-        parent = self.model.index(self.workingDir)
+        parent = self.model.index(self.working_dir)
         for i in range(self.model.rowCount(parent)):
             if i > 0:
                 saveString += str("\n{ns}\n\n")
@@ -277,7 +262,7 @@ class MainForm(QtGui.QMainWindow):
             file = open(path, "r")
             saveString += file.read()
             file.close()
-        outDir = os.path.join(self.workingDir, "output")
+        outDir = os.path.join(self.working_dir, "output")
         if not os.path.exists(outDir):
             os.makedirs(outDir)
         saveFile = open(os.path.join(outDir, "songbook.cho"), "w")
@@ -292,7 +277,7 @@ class MainForm(QtGui.QMainWindow):
         if chordiiCommand is None:
             chordiiCommand = which("chordii430")
         if chordiiCommand is None:
-            ret = QMessageBox.critical(self, self.tr(self.appName + " - Chordii problem"),
+            ret = QMessageBox.critical(self, self.tr(self.app_name + " - Chordii problem"),
                                        self.tr("Couldn't find a chordii executable in the PATH. \
                                        Please specify chordii's location to continue."),
                                        QMessageBox.Open | QMessageBox.Cancel, QMessageBox.Open)
@@ -301,7 +286,7 @@ class MainForm(QtGui.QMainWindow):
                                                              QDir.homePath())[0]
         command = [chordiiCommand, "-i", "-L", "-p", "1"] if not preview else [chordiiCommand]
         if not outputFile:
-            outDir = os.path.join(self.workingDir, "output")
+            outDir = os.path.join(self.working_dir, "output")
             outputFile = os.path.join(outDir, "songbook.ps")
             if not os.path.exists(outDir):
                 os.makedirs(outDir)
@@ -317,25 +302,25 @@ class MainForm(QtGui.QMainWindow):
             response = subprocess.check_output(command, stderr=subprocess.STDOUT)
             if not preview:
                 if response is not None and response == b'':
-                    QMessageBox.information(self, self.tr(self.appName + " - Chordii was successful"),
+                    QMessageBox.information(self, self.tr(self.app_name + " - Chordii was successful"),
                                             self.tr("Chordii compiled the songbook without warnings!"))
                 elif response is not None:
                     msgBox = WarningMessageBox()
-                    msgBox.setWindowTitle(self.tr(self.appName + " - Chordii warning"))
+                    msgBox.setWindowTitle(self.tr(self.app_name + " - Chordii warning"))
                     msgBox.setText(self.tr("Chordii exited with warnings."))
                     msgBox.setDetailedText(self.tr(bytearray(response).decode()))
                     msgBox.setIcon(QMessageBox.Warning)
                     msgBox.exec_()
         except subprocess.CalledProcessError as e:
             if not preview:
-                QMessageBox.critical(self, self.tr(self.appName + " - Chordii problem"),
+                QMessageBox.critical(self, self.tr(self.app_name + " - Chordii problem"),
                                      self.tr("Chordii crashed while compiling. Please check your syntax.\
                                              Tip: This is probably due to an incorrect chord definition."))
 
     def tab2chordpro(self):
         notation = testTabFormat(self.ui.textEdit.toPlainText(), [enNotation])
         if notation is not None:
-            res = QMessageBox.question(self, self.tr(self.appName),
+            res = QMessageBox.question(self, self.tr(self.app_name),
                                        self.tr("It seems this file is in the tab format.\n" +
                                                "Do you want to convert it to the ChordPro format?"),
                                        QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
@@ -347,6 +332,15 @@ class MainForm(QtGui.QMainWindow):
         out_file = '{}.pdf'.format(os.path.splitext(file)[0])
         print(subprocess.check_output(['ps2pdf', file, out_file], stderr=subprocess.STDOUT))
         return out_file
+
+
+def parse_arguments():
+    parser = argparse.ArgumentParser(
+        description='A Qt GUI for Chordii.')
+    parser.add_argument('-d', '--workingdir',
+                        help='the directory containing Chordii files')
+    args = parser.parse_args()
+    return args
 
 
 if __name__ == "__main__":
