@@ -19,8 +19,9 @@ from PyQt4.QtCore import QRegExp
 from PyQt4.QtGui import QColor, QTextCharFormat, QFont, QSyntaxHighlighter
 
 
-def format(color, style=''):
-    """Return a QTextCharFormat with the given attributes.
+def font_format(color, style=''):
+    """
+    Return a QTextCharFormat with the given attributes.
     """
     _color = QColor()
     _color.setNamedColor(color)
@@ -37,15 +38,16 @@ def format(color, style=''):
 
 # Syntax styles that can be shared by all languages
 STYLES = {
-    'keyword': format('blue'),
-    'argument': format('green'),
-    'curlyBrace': format('blue'),
-    'chord': format('red')
+    'keyword': font_format('blue'),
+    'argument': font_format('green'),
+    'curlyBrace': font_format('blue'),
+    'chord': font_format('red')
 }
 
 
 class ChordProHighlighter(QSyntaxHighlighter):
-    """Syntax highlighter for the Python language.
+    """
+    Syntax highlighter for the ChordPro language.
     """
     # ChordPro keywords
     keywords = [
@@ -80,19 +82,19 @@ class ChordProHighlighter(QSyntaxHighlighter):
         self.rules = [(QRegExp(pat), index, fmt)
                       for (pat, index, fmt) in rules]
 
-
     def highlightBlock(self, text):
-        """Apply syntax highlighting to the given block of text.
+        """
+        Apply syntax highlighting to the given block of text.
         """
         # Do other syntax formatting
-        for expression, nth, format in self.rules:
+        for expression, nth, fmt in self.rules:
             index = expression.indexIn(text, 0)
 
             while index >= 0:
                 # We actually want the index of the nth match
                 index = expression.pos(nth)
                 length = len(expression.cap(nth))
-                self.setFormat(index, length, format)
+                self.setFormat(index, length, fmt)
                 index = expression.indexIn(text, index + length)
 
         self.setCurrentBlockState(0)
@@ -103,9 +105,10 @@ class ChordProHighlighter(QSyntaxHighlighter):
     #        if not in_multiline:
     #            in_multiline = self.match_multiline(text, *self.tri_double)
 
-
     def match_multiline(self, text, delimiter, in_state, style):
-        """Do highlighting of multi-line strings. ``delimiter`` should be a
+        # TODO: adapt this for ChordPro blocks (chorus etc.)
+        """
+        Do highlighting of multi-line strings. ``delimiter`` should be a
         ``QRegExp`` for triple-single-quotes or triple-double-quotes, and
         ``in_state`` should be a unique integer to represent the corresponding
         state changes when inside those strings. Returns True if we're still

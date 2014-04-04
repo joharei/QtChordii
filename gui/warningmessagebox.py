@@ -17,6 +17,7 @@
 
 from PyQt4.QtGui import *
 
+
 class WarningMessageBox(QMessageBox):
 
     def __init__(self, *args, **kwargs):

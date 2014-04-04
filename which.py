@@ -15,13 +15,16 @@
 # You should have received a copy of the GNU General Public License
 # along with QtChordii.  If not, see <http://www.gnu.org/licenses/>.
 
+
 def which(program):
     """
     Check if the program is in PATH.
     """
     import os
-    def is_exe(fpath):
-        return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+
+    def is_exe(file_path):
+        return os.path.isfile(file_path) and os.access(file_path, os.X_OK)
+
     for file in os.listdir("."):
         if file.startswith("chordii"):
             if is_exe(file):

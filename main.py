@@ -23,10 +23,12 @@ import subprocess
 import sys
 import codecs
 import glob
+
 from PyQt4 import QtCore, QtGui, uic
 from PyQt4.QtCore import QDir, Qt, QSize
-from gui.warningmessagebox import WarningMessageBox
 from PyQt4.QtGui import QFileDialog, QMessageBox, QInputDialog, QListWidgetItem, QIcon
+
+from gui.warningmessagebox import WarningMessageBox
 from which import which
 from tab2chordpro.Transpose import testTabFormat, tab2ChordPro, enNotation
 
@@ -43,12 +45,13 @@ class MainForm(QtGui.QMainWindow):
 
         #        self.highlighter = Highlighter()
 
+        self.file_name = None
         self.working_dir = args.workingdir
 
         if self.working_dir is None:
-            self.selectDir()
+            self.select_dir()
         else:
-            self.openDir()
+            self.open_dir()
 
         self.setup_file_widget()
         self.setup_editor()
@@ -67,38 +70,38 @@ class MainForm(QtGui.QMainWindow):
         new_file_act = self.ui.actionNew
         new_file_act.setShortcut(QtGui.QKeySequence.New)
         new_file_act.setIcon(QIcon.fromTheme('document-new'))
-        new_file_act.triggered.connect(self.newFile)
+        new_file_act.triggered.connect(self.new_file)
         file_menu.addAction(new_file_act)
 
         # open_file_act = QtGui.QAction(self.tr("&Open Directory..."), self)
         open_file_act = self.ui.actionOpen
         open_file_act.setShortcut(QtGui.QKeySequence.Open)
         open_file_act.setIcon(QIcon.fromTheme('folder-open'))
-        open_file_act.triggered.connect(self.selectDir)
+        open_file_act.triggered.connect(self.select_dir)
         file_menu.addAction(open_file_act)
 
         # save_file_act = QtGui.QAction(self.tr("&Save"), self)
         save_file_act = self.ui.actionSave
         save_file_act.setShortcut(QtGui.QKeySequence.Save)
         save_file_act.setIcon(QIcon.fromTheme('document-save'))
-        save_file_act.triggered.connect(self.saveFile)
+        save_file_act.triggered.connect(self.save_file)
         file_menu.addAction(save_file_act)
 
         save_file_as_act = QtGui.QAction(self.tr("Save as..."), self)
         save_file_as_act.setShortcut(QtGui.QKeySequence.SaveAs)
-        save_file_as_act.triggered.connect(self.saveFileAs)
+        save_file_as_act.triggered.connect(self.save_file_as)
         file_menu.addAction(save_file_as_act)
 
         file_menu.addSeparator()
 
         save_project_file_act = QtGui.QAction(self.tr("Save &project"), self)
         #        save_project_file_act.setShortcut(QtGui.QKeySequence.Save)
-        save_project_file_act.triggered.connect(self.saveProject)
+        save_project_file_act.triggered.connect(self.save_project)
         file_menu.addAction(save_project_file_act)
 
         # export_file_act = QtGui.QAction(self.tr("&Export songbook to PostScript..."), self)
         export_file_act = self.ui.actionRun
-        export_file_act.triggered.connect(self.runChordii)
+        export_file_act.triggered.connect(self.run_chordii)
         export_file_act.setIcon(QIcon.fromTheme('system-run'))
         file_menu.addAction(export_file_act)
 
@@ -111,19 +114,19 @@ class MainForm(QtGui.QMainWindow):
         self.ui.fileWidget.itemSelectionChanged.connect(self.selection_changed)
 
     def setup_editor(self):
-        self.ui.textEdit.setMain(self)
+        self.ui.textEdit.set_main(self)
         self.ui.textEdit.textChanged.connect(self.set_dirty)
 
     def selection_changed(self):
         if len(self.ui.fileWidget.selectedItems()) == 1:
             if self.ok_to_continue():
-                self.openFile(self.ui.fileWidget.selectedItems()[0].data(Qt.UserRole))
+                self.open_file(self.ui.fileWidget.selectedItems()[0].data(Qt.UserRole))
 
     def set_dirty(self):
         """
         On change of text in textEdit window, set the flag "dirty" to True
         """
-        if hasattr(self, "fileName"):
+        if self.file_name:
             if self.dirty:
                 return True
             self.dirty = True
@@ -137,8 +140,8 @@ class MainForm(QtGui.QMainWindow):
         """
         Keep status current.
         """
-        if hasattr(self, "fileName") and self.fileName is not None:
-            file_base = os.path.basename(self.fileName)
+        if self.file_name:
+            file_base = os.path.basename(self.file_name)
             self.setWindowTitle(str(self.app_name + " - " + file_base + "[*]"))
             self.ui.statusBar.showMessage(message, 5000)
             self.setWindowModified(self.dirty)
@@ -155,61 +158,61 @@ class MainForm(QtGui.QMainWindow):
             if reply == QMessageBox.Cancel:
                 return False
             elif reply == QMessageBox.Yes:
-                return self.saveFile()
+                return self.save_file()
         return True
 
-    def newFile(self):
+    def new_file(self):
         if not self.ok_to_continue():
             return
-        self.fileName = QInputDialog.getText(self, self.tr("New File..."),
-                                             self.tr("Enter name for new file (without extension):"))
-        if not self.fileName[1]:
+        self.file_name = QInputDialog.getText(self, self.tr("New File..."),
+                                              self.tr("Enter name for new file (without extension):"))
+        if not self.file_name[1]:
             return
-        self.fileName = os.path.join(self.working_dir, str(self.fileName[0]) + ".cho")
-        self.saveFile()
+        self.file_name = os.path.join(self.working_dir, str(self.file_name[0]) + ".cho")
+        self.save_file()
         if self.ui.textEdit.isReadOnly():
             self.ui.textEdit.setReadOnly(False)
         self.ui.textEdit.setText("{t:}\n{st:}")
         self.ui.textEdit.setFocus()
         self.statusBar().showMessage('New file', 5000)
 
-    def openFile(self, path=""):
+    def open_file(self, path=""):
         if self.ui.textEdit.isReadOnly():
             self.ui.textEdit.setReadOnly(False)
 
-        self.fileName = path
+        self.file_name = path
 
-        if self.fileName != "":
-            inStream = codecs.open(self.fileName, "r", "ISO-8859-1")
-            if inStream:
-                self.ui.textEdit.setPlainText(inStream.read())
+        if self.file_name != "":
+            in_stream = codecs.open(self.file_name, "r", "ISO-8859-1")
+            if in_stream:
+                self.ui.textEdit.setPlainText(in_stream.read())
         self.clear_dirty()
 
         self.temp_dir = os.path.join(self.working_dir, "temp")
         if not os.path.exists(self.temp_dir):
             os.makedirs(self.temp_dir)
-        out_file = os.path.join(self.temp_dir, '{}.ps'.format(os.path.splitext(os.path.basename(self.fileName))[0]))
+        out_file = os.path.join(self.temp_dir, '{}.ps'.format(os.path.splitext(os.path.basename(self.file_name))[0]))
 
-        self.runChordii(self.fileName, out_file, True)
+        self.run_chordii(self.file_name, out_file, True)
 
         self.ui.scrollArea.load(self.ps2pdf(out_file))
         self.update_status('File opened.')
         self.tab2chordpro()
 
-    def saveFile(self):
+    def save_file(self):
         """
         Save file with current name.
         """
-        if self.fileName is None:
-            return self.saveFileAs()
+        if self.file_name is None:
+            return self.save_file_as()
         else:
             if not self.dirty:
                 return
-            fname = self.fileName
+            fname = self.file_name
             fl = codecs.open(fname, 'w', "ISO-8859-1")
-            tempText = self.ui.textEdit.toPlainText()
-            if tempText:
-                fl.write(tempText)
+            temp_text = self.ui.textEdit.toPlainText()
+            if temp_text:
+                fl.write(temp_text)
                 fl.close()
                 self.clear_dirty()
                 self.update_status('Saved file')
@@ -218,28 +221,28 @@ class MainForm(QtGui.QMainWindow):
                 self.ui.statusBar.showMessage('Failed to save ...', 5000)
                 return False
 
-    def saveFileAs(self):
+    def save_file_as(self):
         """
         Save file with a different name and maybe different directory.
         """
-        path = self.fileName if self.fileName is not None else self.working_dir
+        path = self.file_name if self.file_name is not None else self.working_dir
         fname = QFileDialog.getSaveFileName(self,
                                             self.tr("Save as..."), path, self.tr("Chordii files (*.cho *.crd)"))[0]
         if fname:
             print(fname)
             if "." not in fname:
                 fname += ".cho"
-            self.fileName = fname
-            self.saveFile()
+            self.file_name = fname
+            self.save_file()
             self.statusBar().showMessage('SaveAs file' + fname, 8000)
             self.clear_dirty()
 
-    def selectDir(self):
+    def select_dir(self):
         self.working_dir = QFileDialog.getExistingDirectory(self, self.tr("Choose working directory"),
                                                             QDir.homePath() if self.working_dir is None else "")
-        self.openDir()
+        self.open_dir()
 
-    def openDir(self):
+    def open_dir(self):
         print(self.working_dir)
         for fileType in ('cho', 'crd'):
             for file in glob.iglob('{}/*.{}'.format(self.working_dir, fileType)):
@@ -248,55 +251,55 @@ class MainForm(QtGui.QMainWindow):
                 item.setSizeHint(QSize(0, 30))
                 self.ui.fileWidget.addItem(item)
 
-    def saveProject(self):
+    def save_project(self):
         """
         Save all the song files as one continuous file for passing to Chordii.
         """
-        saveString = ""
+        save_string = ""
         parent = self.model.index(self.working_dir)
         for i in range(self.model.rowCount(parent)):
             if i > 0:
-                saveString += str("\n{ns}\n\n")
+                save_string += str("\n{ns}\n\n")
             row = self.model.index(i, 0, parent)
             path = self.model.fileInfo(row).absoluteFilePath()
             file = open(path, "r")
-            saveString += file.read()
+            save_string += file.read()
             file.close()
-        outDir = os.path.join(self.working_dir, "output")
-        if not os.path.exists(outDir):
-            os.makedirs(outDir)
-        saveFile = open(os.path.join(outDir, "songbook.cho"), "w")
-        saveFile.write(saveString)
+        out_dir = os.path.join(self.working_dir, "output")
+        if not os.path.exists(out_dir):
+            os.makedirs(out_dir)
+        save_file = open(os.path.join(out_dir, "songbook.cho"), "w")
+        save_file.write(save_string)
 
-    def runChordii(self, inputFile=None, outputFile=None, preview=False):
+    def run_chordii(self, input_file=None, output_file=None, preview=False):
         """
         Run Chordii to produce output.
         """
 
-        chordiiCommand = which("chordii")
-        if chordiiCommand is None:
-            chordiiCommand = which("chordii430")
-        if chordiiCommand is None:
+        chordii_command = which("chordii")
+        if chordii_command is None:
+            chordii_command = which("chordii430")
+        if chordii_command is None:
             ret = QMessageBox.critical(self, self.tr(self.app_name + " - Chordii problem"),
                                        self.tr("Couldn't find a chordii executable in the PATH. \
                                        Please specify chordii's location to continue."),
                                        QMessageBox.Open | QMessageBox.Cancel, QMessageBox.Open)
             if ret == QMessageBox.Open:
-                chordiiCommand = QFileDialog.getOpenFileName(self, self.tr("Specify the chordii executable"),
-                                                             QDir.homePath())[0]
-        command = [chordiiCommand, "-i", "-L", "-p", "1"] if not preview else [chordiiCommand]
-        if not outputFile:
-            outDir = os.path.join(self.working_dir, "output")
-            outputFile = os.path.join(outDir, "songbook.ps")
-            if not os.path.exists(outDir):
-                os.makedirs(outDir)
-        if not inputFile:
+                chordii_command = QFileDialog.getOpenFileName(self, self.tr("Specify the chordii executable"),
+                                                              QDir.homePath())[0]
+        command = [chordii_command, "-i", "-L", "-p", "1"] if not preview else [chordii_command]
+        if not output_file:
+            out_dir = os.path.join(self.working_dir, "output")
+            output_file = os.path.join(out_dir, "songbook.ps")
+            if not os.path.exists(out_dir):
+                os.makedirs(out_dir)
+        if not input_file:
             for i in range(self.ui.fileWidget.count()):
                 command.append(self.ui.fileWidget.item(i).data(Qt.UserRole))
         else:
-            command.append(inputFile)
+            command.append(input_file)
         command.append("-o")
-        command.append(outputFile)
+        command.append(output_file)
         print(command)
         try:
             response = subprocess.check_output(command, stderr=subprocess.STDOUT)
@@ -305,13 +308,13 @@ class MainForm(QtGui.QMainWindow):
                     QMessageBox.information(self, self.tr(self.app_name + " - Chordii was successful"),
                                             self.tr("Chordii compiled the songbook without warnings!"))
                 elif response is not None:
-                    msgBox = WarningMessageBox()
-                    msgBox.setWindowTitle(self.tr(self.app_name + " - Chordii warning"))
-                    msgBox.setText(self.tr("Chordii exited with warnings."))
-                    msgBox.setDetailedText(self.tr(bytearray(response).decode()))
-                    msgBox.setIcon(QMessageBox.Warning)
-                    msgBox.exec_()
-        except subprocess.CalledProcessError as e:
+                    msg_box = WarningMessageBox()
+                    msg_box.setWindowTitle(self.tr(self.app_name + " - Chordii warning"))
+                    msg_box.setText(self.tr("Chordii exited with warnings."))
+                    msg_box.setDetailedText(self.tr(bytearray(response).decode()))
+                    msg_box.setIcon(QMessageBox.Warning)
+                    msg_box.exec_()
+        except subprocess.CalledProcessError:
             if not preview:
                 QMessageBox.critical(self, self.tr(self.app_name + " - Chordii problem"),
                                      self.tr("Chordii crashed while compiling. Please check your syntax.\

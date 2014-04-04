@@ -19,9 +19,12 @@ from PyQt4 import QtGui
 from PyQt4.QtGui import QTextEdit
 from syntax import ChordProHighlighter
 
+
 class CustomTextEdit(QTextEdit):
     def __init__(self, parent):
         super(CustomTextEdit, self).__init__(parent)
+        self.main = None
+
         font = QtGui.QFont()
         font.setFamily("Courier")
         font.setFixedPitch(True)
@@ -34,7 +37,7 @@ class CustomTextEdit(QTextEdit):
 
         self.setAcceptRichText(False)
 
-    def setMain(self, main):
+    def set_main(self, main):
         self.main = main
 
     def insertFromMimeData(self, source):

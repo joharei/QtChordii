@@ -25,54 +25,57 @@ class PDFViewer(QScrollArea):
         super().__init__(parent)
         self.setWidgetResizable(True)
         self.doc = None
-        self.isBlanked = True
+        self.is_blanked = True
+        self.current_page = 0
+        self.pdf_images = [None for i in range(self.doc.numPages())]
+        self.scroll_layout = None
 
     def load(self, filename):
         self.doc = popplerqt4.Poppler.Document.load(filename)
         self.doc.setRenderHint(
             popplerqt4.Poppler.Document.Antialiasing and popplerqt4.Poppler.Document.TextAntialiasing)
-        self.currentPage = 0
-        self.pdfImages = [None for i in range(self.doc.numPages())]
-        self.cacheImage(self.currentPage)
-        self.unBlank()
+        self.current_page = 0
+        self.pdf_images = [None for i in range(self.doc.numPages())]
+        self.cache_image(self.current_page)
+        self.un_blank()
         self.paintEvent(None)
 
-    def cacheImage(self, idx):
+    def cache_image(self, idx):
         if idx >= self.doc.numPages():
             return
-        if self.pdfImages[idx] is not None:
+        if self.pdf_images[idx] is not None:
             return
         page = self.doc.page(idx)
         scroll_width = self.verticalScrollBar().sizeHint().width()
         ratio = 1.0 * (self.frameSize().width() - 1.7 * scroll_width) / page.pageSize().width()
-        self.pdfImages[idx] = page.renderToImage(72 * ratio, 72 * ratio)
+        self.pdf_images[idx] = page.renderToImage(72 * ratio, 72 * ratio)
 
-    def getImage(self, idx):
-        self.cacheImage(idx)
-        return self.pdfImages[idx]
+    def get_image(self, idx):
+        self.cache_image(idx)
+        return self.pdf_images[idx]
 
     def blank(self):
-        self.isBlanked = True
+        self.is_blanked = True
         self.update()
 
-    def unBlank(self):
-        self.isBlanked = False
+    def un_blank(self):
+        self.is_blanked = False
         self.update()
 
     def paintEvent(self, event):
-        if self.isBlanked:
+        if self.is_blanked:
             return
-        img = self.getImage(0)
+        img = self.get_image(0)
         if img is None:
             return
 
-        scrollContents = QtGui.QWidget()
-        self.setWidget(scrollContents)
+        scroll_contents = QtGui.QWidget()
+        self.setWidget(scroll_contents)
         self.scroll_layout = QtGui.QVBoxLayout()
-        scrollContents.setLayout(self.scroll_layout)
+        scroll_contents.setLayout(self.scroll_layout)
 
         for i in range(self.doc.numPages()):
-            img = self.getImage(i)
+            img = self.get_image(i)
             label = QtGui.QLabel()
             label.setPixmap(QtGui.QPixmap(img))
 

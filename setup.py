@@ -26,9 +26,9 @@ setup(
     author='Johan Reitan',
     author_email='johan.reitan@gmail.com',
     description='A simple GUI for Chordii making organizing of songbooks easier.',
-    options = {"build_exe" : build_exe_options},
-    executables = [Executable("main.py",
-                              shortcutName="QtChordii",
-                              shortcutDir="DesktopFolder",
-                              base = base)], requires=['PyQt4']
+    options={"build_exe": build_exe_options},
+    executables=[Executable("main.py",
+                            shortcutName="QtChordii",
+                            shortcutDir="DesktopFolder",
+                            base=base)], requires=['PyQt4']
 )
