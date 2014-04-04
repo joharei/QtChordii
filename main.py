@@ -19,10 +19,12 @@
 
 import argparse
 import os
+import shutil
 import subprocess
 import sys
 import codecs
 import glob
+import tempfile
 
 from PyQt4 import QtCore, QtGui, uic
 from PyQt4.QtCore import QDir, Qt, QSize
@@ -48,6 +50,7 @@ class MainForm(QtGui.QMainWindow):
 
         self.file_name = None
         self.working_dir = args.workingdir
+        self.temp_dir = tempfile.mkdtemp()
 
         if self.working_dir is None:
             self.select_dir()
@@ -123,6 +126,16 @@ class MainForm(QtGui.QMainWindow):
             if self.ok_to_continue():
                 self.open_file(self.ui.fileWidget.selectedItems()[0].data(Qt.UserRole))
 
+    def closeEvent(self, event):
+        """
+        Ask to save, and remove temp_dir
+        """
+        if self.ok_to_continue():
+            shutil.rmtree(self.temp_dir)
+            event.accept()
+        else:
+            event.ignore()
+
     def set_dirty(self):
         """
         On change of text in textEdit window, set the flag "dirty" to True
@@ -189,9 +202,6 @@ class MainForm(QtGui.QMainWindow):
                 self.ui.textEdit.setPlainText(in_stream.read())
         self.clear_dirty()
 
-        self.temp_dir = os.path.join(self.working_dir, "temp")
-        if not os.path.exists(self.temp_dir):
-            os.makedirs(self.temp_dir)
         out_file = os.path.join(self.temp_dir, '{}.ps'.format(os.path.splitext(os.path.basename(self.file_name))[0]))
 
         self.run_chordii(self.file_name, out_file, True)
