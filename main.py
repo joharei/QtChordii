@@ -29,8 +29,9 @@ from PyQt4.QtCore import QDir, Qt, QSize
 from PyQt4.QtGui import QFileDialog, QMessageBox, QInputDialog, QListWidgetItem, QIcon
 
 from gui.warningmessagebox import WarningMessageBox
-from which import which
 from tab2chordpro.Transpose import testTabFormat, tab2ChordPro, enNotation
+from utils.which import which
+from utils.ps2pdf import ps2pdf
 
 
 class MainForm(QtGui.QMainWindow):
@@ -195,7 +196,7 @@ class MainForm(QtGui.QMainWindow):
 
         self.run_chordii(self.file_name, out_file, True)
 
-        self.ui.scrollArea.load(self.ps2pdf(out_file))
+        self.ui.scrollArea.load(ps2pdf(out_file))
         self.update_status('File opened.')
         self.tab2chordpro()
 
@@ -330,11 +331,6 @@ class MainForm(QtGui.QMainWindow):
             if res == QMessageBox.No:
                 return
             self.ui.textEdit.setText(tab2ChordPro(self.ui.textEdit.toPlainText()))
-
-    def ps2pdf(self, file):
-        out_file = '{}.pdf'.format(os.path.splitext(file)[0])
-        print(subprocess.check_output(['ps2pdf', file, out_file], stderr=subprocess.STDOUT))
-        return out_file
 
 
 def parse_arguments():
