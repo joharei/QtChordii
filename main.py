@@ -301,7 +301,7 @@ class MainForm(QtGui.QMainWindow):
             command.append(input_file)
         command.append("-o")
         command.append(output_file)
-        print(command)
+        print('{}'.format(' '.join(map(str, command))))
         try:
             response = subprocess.check_output(command, stderr=subprocess.STDOUT)
             if not preview:
@@ -315,7 +315,7 @@ class MainForm(QtGui.QMainWindow):
                     msg_box.setDetailedText(self.tr(bytearray(response).decode()))
                     msg_box.setIcon(QMessageBox.Warning)
                     msg_box.exec_()
-        except subprocess.CalledProcessError:
+        except subprocess.CalledProcessError as e:
             if not preview:
                 QMessageBox.critical(self, self.tr(self.app_name + " - Chordii problem"),
                                      self.tr("Chordii crashed while compiling. Please check your syntax.\
