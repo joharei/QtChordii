@@ -38,10 +38,10 @@ def font_format(color, style=''):
 
 # Syntax styles that can be shared by all languages
 STYLES = {
-    'keyword': font_format('blue'),
-    'argument': font_format('green'),
-    'curlyBrace': font_format('blue'),
-    'chord': font_format('red')
+    'keyword': font_format('olive'),
+    'argument': font_format('darkcyan'),
+    'curlyBrace': font_format('orange'),
+    'chord': font_format('firebrick')
 }
 
 
@@ -51,12 +51,14 @@ class ChordProHighlighter(QSyntaxHighlighter):
     """
     # ChordPro keywords
     keywords = [
-        'new_song', 'ns', 'title', 't', 'subtitle', 'st', 'start_of_chorus', 'soc', 'end_of_chorus', 'eoc',
-        'comment', 'c', 'comment_italic', 'ci', 'comment_box', 'cb', 'start_of_tab', 'sot', 'end_of_tab', 'eot',
+        'new_song', 'ns', 'start_of_chorus', 'soc', 'end_of_chorus', 'eoc', 'start_of_tab', 'sot', 'end_of_tab', 'eot',
+        'define', 'no_grid', 'ng', 'grid', 'g', 'new_page', 'np', 'new_physical_page', 'npp', 'column_break', 'colb'
     ]
     argumentKeywords = [
-        'title', 't', 'subtitle', 'st', 'comment', 'c',
+        'title', 't', 'subtitle', 'st', 'comment', 'c', 'comment_italic', 'ci', 'comment_box', 'cb', 'textfont',
+        'textsize', 'chordfont', 'chordsize', 'titles', 'columns', 'col', 'pagetype'
     ]
+    keywords.extend(argumentKeywords)
 
     # Braces
     curlyBraces = [
@@ -72,9 +74,10 @@ class ChordProHighlighter(QSyntaxHighlighter):
         rules = []
 
         # Rules
+        # TODO: make a nice rule for chord definition
+        # TODO: make rules for keywords that take special arguments (like numbers)
         rules += [(r'\{%s\:(.)*\}' % w, 0, STYLES['argument']) for w in ChordProHighlighter.argumentKeywords]
-        rules += [(r'\{%s\:' % w, 0, STYLES['keyword']) for w in ChordProHighlighter.keywords]
-        rules += [(r'\{%s' % w, 0, STYLES['keyword']) for w in ChordProHighlighter.keywords]
+        rules += [(r'\{%s\:?' % w, 0, STYLES['keyword']) for w in ChordProHighlighter.keywords]
         rules += [(r'%s' % b, 0, STYLES['curlyBrace']) for b in ChordProHighlighter.curlyBraces]
         rules += [(r'\[[^\]]*\]', 0, STYLES['chord'])]
 
