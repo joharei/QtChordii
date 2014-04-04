@@ -41,7 +41,8 @@ STYLES = {
     'keyword': font_format('olive'),
     'argument': font_format('darkcyan'),
     'curlyBrace': font_format('orange'),
-    'chord': font_format('firebrick')
+    'chord': font_format('firebrick'),
+    'chorus': font_format('yellow', 'bold')
 }
 
 
@@ -70,6 +71,8 @@ class ChordProHighlighter(QSyntaxHighlighter):
 
     def __init__(self, document):
         QSyntaxHighlighter.__init__(self, document)
+
+        self.start_of_chorus = (QRegExp("\{soc\}"), QRegExp("\{eoc\}"), 1, STYLES['chorus'])
 
         rules = []
 
@@ -103,46 +106,44 @@ class ChordProHighlighter(QSyntaxHighlighter):
         self.setCurrentBlockState(0)
 
         # Do multi-line strings
+        # TODO: Stop this from overriding the existing style
+        # in_multiline = self.match_multiline(text, *self.start_of_chorus)
 
-    #        in_multiline = self.match_multiline(text, *self.tri_single)
-    #        if not in_multiline:
-    #            in_multiline = self.match_multiline(text, *self.tri_double)
-
-    def match_multiline(self, text, delimiter, in_state, style):
-        # TODO: adapt this for ChordPro blocks (chorus etc.)
+    def match_multiline(self, text, starting_delimiter, ending_delimiter, in_state, style):
         """
-        Do highlighting of multi-line strings. ``delimiter`` should be a
-        ``QRegExp`` for triple-single-quotes or triple-double-quotes, and
-        ``in_state`` should be a unique integer to represent the corresponding
-        state changes when inside those strings. Returns True if we're still
-        inside a multi-line string when this function is finished.
+        Highlight multiline text between starting_delimiter and ending_delimiter
+        :param text: text to be highlighted
+        :param starting_delimiter: QRegExp for the starting delimiter
+        :param ending_delimiter: QRegExp for the ending delimiter
+        :param in_state: unique integer defining if text is between delimiters
+        :param style: the style to apply
+        :return: True if we are still inside the multi-line, False otherwise
         """
-        # If inside triple-single quotes, start at 0
         if self.previousBlockState() == in_state:
             start = 0
             add = 0
         # Otherwise, look for the delimiter on this line
         else:
-            start = delimiter.indexIn(text)
+            start = starting_delimiter.indexIn(text)
             # Move past this match
-            add = delimiter.matchedLength()
+            add = starting_delimiter.matchedLength()
 
         # As long as there's a delimiter match on this line...
         while start >= 0:
             # Look for the ending delimiter
-            end = delimiter.indexIn(text, start + add)
+            end = ending_delimiter.indexIn(text, start + add)
             # Ending delimiter on this line?
             if end >= add:
-                length = end - start + add + delimiter.matchedLength()
+                length = end - start + add + ending_delimiter.matchedLength()
                 self.setCurrentBlockState(0)
             # No; multi-line string
             else:
                 self.setCurrentBlockState(in_state)
-                length = text.length() - start + add
+                length = len(text) - start + add
                 # Apply formatting
             self.setFormat(start, length, style)
             # Look for the next match
-            start = delimiter.indexIn(text, start + length)
+            start = starting_delimiter.indexIn(text, start + length)
 
         # Return True if still inside a multi-line string, False otherwise
         if self.currentBlockState() == in_state:
