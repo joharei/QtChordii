@@ -27,7 +27,7 @@ class PDFViewer(QScrollArea):
         self.doc = None
         self.is_blanked = True
         self.current_page = 0
-        self.pdf_images = [None for i in range(self.doc.numPages())]
+        self.pdf_images = []
         self.scroll_layout = None
 
     def load(self, filename):
