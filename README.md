@@ -37,7 +37,7 @@ QtChordii is written in Python 3 with PySide, i.e. python>=3.0 and the PySide li
 Copyright
 ---------
 
-Copyright 2013 Johan Reitan.
+Copyright (C) 2013, 2014 Johan Reitan.
 
 QtChordii is licensed following the conditions of the GNU Public License version 3 or later. See COPYING for the full
 license text.
