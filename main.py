@@ -31,6 +31,7 @@ from PyQt4.QtCore import QDir, Qt, QSize
 from PyQt4.QtGui import QFileDialog, QMessageBox, QInputDialog, QListWidgetItem, QIcon
 
 from gui.warningmessagebox import WarningMessageBox
+from songbook import Songbook
 from tab2chordpro.Transpose import testTabFormat, tab2ChordPro, enNotation
 from utils.which import which
 from utils.ps2pdf import ps2pdf
@@ -49,13 +50,16 @@ class MainForm(QtGui.QMainWindow):
         #        self.highlighter = Highlighter()
 
         self.file_name = None
-        self.working_dir = args.workingdir
-        self.temp_dir = tempfile.mkdtemp()
-
-        if self.working_dir is None:
-            self.select_dir()
+        self.project_file = None
+        self.songbook = Songbook()
+        if args.project:
+            self.project_file = os.path.abspath(args.project)
         else:
-            self.open_dir()
+            self.save_project()
+        self.working_dir = os.path.dirname(self.project_file)
+        self.load_project(self.project_file)
+
+        self.temp_dir = tempfile.mkdtemp()
 
         self.setup_file_widget()
         self.setup_editor()
@@ -97,6 +101,10 @@ class MainForm(QtGui.QMainWindow):
         file_menu.addAction(save_file_as_act)
 
         file_menu.addSeparator()
+
+        load_project_file_act = QtGui.QAction(self.tr("&Load project"), self)
+        load_project_file_act.triggered.connect(self.select_project)
+        file_menu.addAction(load_project_file_act)
 
         save_project_file_act = QtGui.QAction(self.tr("Save &project"), self)
         #        save_project_file_act.setShortcut(QtGui.QKeySequence.Save)
@@ -178,11 +186,10 @@ class MainForm(QtGui.QMainWindow):
     def new_file(self):
         if not self.ok_to_continue():
             return
-        self.file_name = QInputDialog.getText(self, self.tr("New File..."),
-                                              self.tr("Enter name for new file (without extension):"))
+        self.file_name = QFileDialog.getSaveFileName(self, self.tr("New file"), QDir.homePath(),
+                                                     self.tr("Chordii files (*.cho *.crd)"))
         if not self.file_name[1]:
             return
-        self.file_name = os.path.join(self.working_dir, str(self.file_name[0]) + ".cho")
         self.save_file()
         if self.ui.textEdit.isReadOnly():
             self.ui.textEdit.setReadOnly(False)
@@ -236,7 +243,7 @@ class MainForm(QtGui.QMainWindow):
         """
         Save file with a different name and maybe different directory.
         """
-        path = self.file_name if self.file_name is not None else self.working_dir
+        path = self.file_name if self.file_name else self.working_dir
         fname = QFileDialog.getSaveFileName(self,
                                             self.tr("Save as..."), path, self.tr("Chordii files (*.cho *.crd)"))[0]
         if fname:
@@ -249,38 +256,49 @@ class MainForm(QtGui.QMainWindow):
             self.clear_dirty()
 
     def select_dir(self):
-        self.working_dir = QFileDialog.getExistingDirectory(self, self.tr("Choose working directory"),
-                                                            QDir.homePath() if self.working_dir is None else "")
-        self.open_dir()
+        directory = QFileDialog.getExistingDirectory(self, self.tr("Choose working directory"),
+                                                     self.working_dir if self.working_dir else QDir.homePath())
+        self.open_dir(directory)
 
-    def open_dir(self):
-        print(self.working_dir)
+    def open_dir(self, directory):
         for fileType in ('cho', 'crd'):
-            for file in glob.iglob('{}/*.{}'.format(self.working_dir, fileType)):
-                item = QListWidgetItem(os.path.basename(file))
-                item.setData(Qt.UserRole, file)
-                item.setSizeHint(QSize(0, 30))
-                self.ui.fileWidget.addItem(item)
+            for filename in glob.iglob('{}/*.{}'.format(directory, fileType)):
+                self.songbook.add_song(filename)
+        self.open_project()
+
+    def select_project(self):
+        filename = QFileDialog.getOpenFileName(self, self.tr("Open project"), QDir.homePath(),
+                                               self.tr("Chordii project files (*.chproj)"))
+        if filename:
+            self.load_project(filename)
+
+    def load_project(self, filename):
+        self.songbook = Songbook()
+        self.songbook.load(filename)
+        self.open_project()
+
+    def open_project(self):
+        self.ui.fileWidget.clear()
+        for filename in self.songbook.songs:
+            item = QListWidgetItem(os.path.basename(filename))
+            item.setData(Qt.UserRole, filename)
+            item.setSizeHint(QSize(0, 30))
+            self.ui.fileWidget.addItem(item)
 
     def save_project(self):
         """
-        Save all the song files as one continuous file for passing to Chordii.
+        Save the list of songs for later loading.
         """
-        save_string = ""
-        parent = self.model.index(self.working_dir)
-        for i in range(self.model.rowCount(parent)):
-            if i > 0:
-                save_string += str("\n{ns}\n\n")
-            row = self.model.index(i, 0, parent)
-            path = self.model.fileInfo(row).absoluteFilePath()
-            file = open(path, "r")
-            save_string += file.read()
-            file.close()
-        out_dir = os.path.join(self.working_dir, "output")
-        if not os.path.exists(out_dir):
-            os.makedirs(out_dir)
-        save_file = open(os.path.join(out_dir, "songbook.cho"), "w")
-        save_file.write(save_string)
+        self.songbook.clear()
+        for i in range(self.ui.fileWidget.count()):
+            path = self.ui.fileWidget.item(i).data(Qt.UserRole)
+            self.songbook.add_song(path)
+        filename = QFileDialog.getSaveFileName(self, self.tr("Save project"),
+                                               self.project_file if self.project_file else QDir.homePath(),
+                                               self.tr("Chordii project files (*.chproj)"))
+        if filename:
+            self.project_file = filename
+            self.songbook.save(filename)
 
     def run_chordii(self, input_file=None, output_file=None, preview=False):
         """
@@ -344,10 +362,8 @@ class MainForm(QtGui.QMainWindow):
 
 
 def parse_arguments():
-    parser = argparse.ArgumentParser(
-        description='A Qt GUI for Chordii.')
-    parser.add_argument('-d', '--workingdir',
-                        help='the directory containing Chordii files')
+    parser = argparse.ArgumentParser(description='A Qt GUI for Chordii.')
+    parser.add_argument('project', nargs='?', help='a project file to open')
     args = parser.parse_args()
     return args
 
