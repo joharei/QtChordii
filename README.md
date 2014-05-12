@@ -32,7 +32,11 @@ export.
 Dependencies
 ------------
 
-QtChordii is written in Python 3 with PySide, i.e. python>=3.0 and the PySide library is required to run the software.
+*   Python 3
+*   PyQt4
+*   popplerqt4
+*   chordii
+*   ps2pdf
 
 Copyright
 ---------
