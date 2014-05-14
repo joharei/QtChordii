@@ -28,9 +28,10 @@ import tempfile
 
 from PyQt4 import QtCore, QtGui, uic
 from PyQt4.QtCore import QDir, Qt, QSize
-from PyQt4.QtGui import QFileDialog, QMessageBox, QInputDialog, QListWidgetItem, QIcon
+from PyQt4.QtGui import QFileDialog, QMessageBox, QListWidgetItem, QIcon
 
 from gui.warningmessagebox import WarningMessageBox
+from gui.welcomedialog import WelcomeDialog
 from songbook import Songbook
 from tab2chordpro.Transpose import testTabFormat, tab2ChordPro, enNotation
 from utils.which import which
@@ -41,33 +42,34 @@ class MainForm(QtGui.QMainWindow):
     def __init__(self, parent=None):
         QtGui.QMainWindow.__init__(self, parent)
         self.ui = uic.loadUi('gui/qtchordii/mainwindow.ui', self)
-        self.show()
 
         self.app_name = "QtChordii"
 
         args = parse_arguments()
 
-        #        self.highlighter = Highlighter()
-
         self.file_name = None
-        self.project_file = None
         self.songbook = Songbook()
         if args.project:
             self.project_file = os.path.abspath(args.project)
         else:
-            self.save_project()
-        self.working_dir = os.path.dirname(self.project_file)
+            self.project_file, new_file = WelcomeDialog.get_project(self)
+            if not self.project_file:
+                sys.exit(0)
+            if new_file:
+                self.save_project()
+
         self.load_project(self.project_file)
 
+        self.working_dir = os.path.dirname(self.project_file)
         self.temp_dir = tempfile.mkdtemp()
 
         self.setup_file_widget()
         self.setup_editor()
-        current_sizes = self.ui.splitter.sizes()
-        self.ui.splitter.setSizes(
-            [400, current_sizes[1] + current_sizes[0], current_sizes[2] + current_sizes[1] + current_sizes[0]])
+        width = 1600
+        splitter_size = 300
+        self.ui.splitter.setSizes([splitter_size, (width - splitter_size) / 2, (width - splitter_size) / 2])
         self.setup_file_menu()
-        self.setGeometry(0, 0, 1600, 800)
+        self.resize(width, 800)
         self.dirty = False
 
     def setup_file_menu(self):
@@ -284,6 +286,7 @@ class MainForm(QtGui.QMainWindow):
             item.setData(Qt.UserRole, filename)
             item.setSizeHint(QSize(0, 30))
             self.ui.fileWidget.addItem(item)
+        self.ui.statusBar.showMessage("Project opened.", 5000)
 
     def save_project(self):
         """
@@ -293,12 +296,13 @@ class MainForm(QtGui.QMainWindow):
         for i in range(self.ui.fileWidget.count()):
             path = self.ui.fileWidget.item(i).data(Qt.UserRole)
             self.songbook.add_song(path)
-        filename = QFileDialog.getSaveFileName(self, self.tr("Save project"),
-                                               self.project_file if self.project_file else QDir.homePath(),
-                                               self.tr("Chordii project files (*.chproj)"))
-        if filename:
-            self.project_file = filename
-            self.songbook.save(filename)
+        # filename = QFileDialog.getSaveFileName(self, self.tr("Save project"),
+        #                                        self.project_file if self.project_file else QDir.homePath(),
+        #                                        self.tr("Chordii project files (*.chproj)"))
+        if self.project_file:
+            self.project_file = self.project_file
+            self.songbook.save(self.project_file)
+        self.ui.statusBar.showMessage("Project saved.", 5000)
 
     def run_chordii(self, input_file=None, output_file=None, preview=False):
         """
@@ -371,4 +375,5 @@ def parse_arguments():
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
     myapp = MainForm()
+    myapp.show()
     sys.exit(app.exec_())
