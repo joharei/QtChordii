@@ -113,11 +113,11 @@ class MainForm(QtGui.QMainWindow):
         save_project_file_act.triggered.connect(self.save_project)
         file_menu.addAction(save_project_file_act)
 
-        # export_file_act = QtGui.QAction(self.tr("&Export songbook to PostScript..."), self)
-        export_file_act = self.ui.actionRun
-        export_file_act.triggered.connect(self.run_chordii)
-        export_file_act.setIcon(QIcon.fromTheme('system-run'))
-        file_menu.addAction(export_file_act)
+        # update_preview_act = QtGui.QAction(self.tr("&Export songbook to PostScript..."), self)
+        update_preview_act = self.ui.actionRun
+        update_preview_act.triggered.connect(self.update_preview)
+        update_preview_act.setIcon(QIcon.fromTheme('system-run'))
+        file_menu.addAction(update_preview_act)
 
         file_menu.addSeparator()
 
@@ -211,13 +211,15 @@ class MainForm(QtGui.QMainWindow):
                 self.ui.textEdit.setPlainText(in_stream.read())
         self.clear_dirty()
 
-        out_file = os.path.join(self.temp_dir, '{}.ps'.format(os.path.splitext(os.path.basename(self.file_name))[0]))
+        self.update_preview()
 
-        self.run_chordii(self.file_name, out_file, True)
-
-        self.ui.scrollArea.load(ps2pdf(out_file))
         self.update_status('File opened.')
         self.tab2chordpro()
+
+    def update_preview(self):
+        out_file = os.path.join(self.temp_dir, '{}.ps'.format(os.path.splitext(os.path.basename(self.file_name))[0]))
+        self.run_chordii(self.file_name, out_file, True)
+        self.ui.scrollArea.load(ps2pdf(out_file))
 
     def save_file(self):
         """
