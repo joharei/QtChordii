@@ -113,11 +113,17 @@ class MainForm(QtGui.QMainWindow):
         save_project_file_act.triggered.connect(self.save_project)
         file_menu.addAction(save_project_file_act)
 
+        file_menu.addSeparator()
+
         # update_preview_act = QtGui.QAction(self.tr("&Export songbook to PostScript..."), self)
-        update_preview_act = self.ui.actionRun
+        update_preview_act = self.ui.actionPreview
         update_preview_act.triggered.connect(self.update_preview)
         update_preview_act.setIcon(QIcon.fromTheme('system-run'))
         file_menu.addAction(update_preview_act)
+
+        compile_songbook_act = QtGui.QAction(self.tr("&Compile songbook"), self)
+        compile_songbook_act.triggered.connect(self.run_chordii)
+        file_menu.addAction(compile_songbook_act)
 
         file_menu.addSeparator()
 

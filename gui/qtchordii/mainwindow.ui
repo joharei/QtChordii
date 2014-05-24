@@ -85,12 +85,14 @@
    <addaction name="actionOpen"/>
    <addaction name="actionSave"/>
    <addaction name="separator"/>
-   <addaction name="actionRun"/>
+   <addaction name="actionPreview"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionNew">
    <property name="icon">
-    <iconset theme="document-new"/>
+    <iconset theme="document-new">
+     <normaloff/>
+    </iconset>
    </property>
    <property name="text">
     <string>&amp;New</string>
@@ -104,7 +106,9 @@
   </action>
   <action name="actionOpen">
    <property name="icon">
-    <iconset theme="folder-open"/>
+    <iconset theme="folder-open">
+     <normaloff/>
+    </iconset>
    </property>
    <property name="text">
     <string>&amp;Open</string>
@@ -118,7 +122,9 @@
   </action>
   <action name="actionSave">
    <property name="icon">
-    <iconset theme="document-save"/>
+    <iconset theme="document-save">
+     <normaloff/>
+    </iconset>
    </property>
    <property name="text">
     <string>&amp;Save</string>
@@ -130,15 +136,17 @@
     <string>Ctrl+S</string>
    </property>
   </action>
-  <action name="actionRun">
+  <action name="actionPreview">
    <property name="icon">
-    <iconset theme="system-run"/>
+    <iconset theme="system-run">
+     <normaloff/>
+    </iconset>
    </property>
    <property name="text">
-    <string>&amp;Run</string>
+    <string>&amp;Preview</string>
    </property>
    <property name="toolTip">
-    <string>Run Chordii</string>
+    <string>Run Chordii and show preview</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+R</string>
