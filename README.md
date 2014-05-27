@@ -32,7 +32,7 @@ In the future, the intention is to support all the options Chordii has to offer.
 Dependencies
 ------------
 
-*   Python <= 3.3
+*   Python >= 3.3
 *   PyQt4
 *   popplerqt4
 *   chordii
