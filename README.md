@@ -16,23 +16,23 @@ To run, execute main.py with Python 3:
 Features
 --------
 
-Currently, QtChordii lists a directory of .cho/.crd files (ChordPro files, see Chordii's 
+Currently, QtChordii can load a directory of .cho/.crd files (ChordPro files, see Chordii's
 [documentation](http://www.vromans.org/johan/projects/Chordii/documentation/index.html) for more), and lets you edit
-these files. It provides syntax highlighting, and uses Chordii to produce output as PostScript.
+these files with syntax highlighting. The list of song files can be saved as a project file (.chproj) so that you can
+work on a songbook project. Provides a preview of the typeset result, and exporting to pdf.
 
 Since this software is written in Python and Qt, it should be platform independent, though it is only tested on linux
-as of yet. The plan is to have it run on Windows and MacOS as well.
+and Mac OS X as of yet. The plan is to have it run on Windows as well.
 
 QtChordii is still in the early stages of development, and does for the moment offer few features beyond the ones 
 mentioned.
 
-In the future, the intention is to support all the options Chordii has to offer, as well as output preview and PDF 
-export.
+In the future, the intention is to support all the options Chordii has to offer.
 
 Dependencies
 ------------
 
-*   Python 3
+*   Python <= 3.3
 *   PyQt4
 *   popplerqt4
 *   chordii
