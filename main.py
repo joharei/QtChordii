@@ -19,18 +19,17 @@
 
 import argparse
 import codecs
-import glob
 import os
 import shutil
 import subprocess
 import sys
 import tempfile
 
+import re
 from PyQt5 import uic
-from PyQt5.QtCore import Qt, QDir, QSize
-from PyQt5.QtGui import QKeySequence, QIcon
-from PyQt5.QtWidgets import (QApplication, QMenu, QAction, qApp, QMessageBox, QFileDialog, QListWidgetItem,
-                             QMainWindow, QDesktopWidget)
+from PyQt5.QtCore import Qt, QDir, QSize, QT_TRANSLATE_NOOP
+from PyQt5.QtGui import QKeySequence
+from PyQt5.QtWidgets import QApplication, qApp, QMessageBox, QFileDialog, QMainWindow, QDesktopWidget, QTableWidgetItem
 
 from gui.warningmessagebox import WarningMessageBox
 from gui.welcomedialog import WelcomeDialog
@@ -38,6 +37,8 @@ from model.songbook import Songbook
 from tab2chordpro.Transpose import testTabFormat, tab2ChordPro, enNotation
 from utils.ps2pdf import ps2pdf
 from utils.which import which
+
+CHORDPRO_FILTER = QT_TRANSLATE_NOOP('MainWindow', 'Chordpro files (*.cho *.crd)')
 
 
 class MainWindow(QMainWindow):
@@ -62,7 +63,6 @@ class MainWindow(QMainWindow):
 
         self.load_project(self.project_file)
 
-        self.working_dir = os.path.dirname(self.project_file)
         self.temp_dir = tempfile.mkdtemp()
 
         self.setup_file_widget()
@@ -72,67 +72,41 @@ class MainWindow(QMainWindow):
         self.dirty = False
 
     def setup_file_menu(self):
-        file_menu = QMenu(self.tr("&File"), self)
-        self.menuBar.addMenu(file_menu)
-
-        # new_file_act = QAction(self.tr("&New..."), self)
         new_file_act = self.ui.actionNew
         new_file_act.setShortcut(QKeySequence.New)
-        new_file_act.setIcon(QIcon.fromTheme('document-new'))
         new_file_act.triggered.connect(self.new_file)
-        file_menu.addAction(new_file_act)
 
-        # open_file_act = QAction(self.tr("&Open Directory..."), self)
-        open_file_act = self.ui.actionOpen
-        open_file_act.setShortcut(QKeySequence.Open)
-        open_file_act.setIcon(QIcon.fromTheme('folder-open'))
-        open_file_act.triggered.connect(self.select_dir)
-        file_menu.addAction(open_file_act)
+        import_files_act = self.ui.actionImport
+        import_files_act.setShortcut(QKeySequence.Open)
+        import_files_act.triggered.connect(self.import_chordpro_files)
 
-        # save_file_act = QAction(self.tr("&Save"), self)
         save_file_act = self.ui.actionSave
         save_file_act.setShortcut(QKeySequence.Save)
-        save_file_act.setIcon(QIcon.fromTheme('document-save'))
         save_file_act.triggered.connect(self.save_file)
-        file_menu.addAction(save_file_act)
 
-        save_file_as_act = QAction(self.tr("Save as..."), self)
+        save_file_as_act = self.ui.actionSave_As
         save_file_as_act.setShortcut(QKeySequence.SaveAs)
         save_file_as_act.triggered.connect(self.save_file_as)
-        file_menu.addAction(save_file_as_act)
 
-        file_menu.addSeparator()
-
-        load_project_file_act = QAction(self.tr("&Load project"), self)
+        load_project_file_act = self.ui.actionLoad_Project
         load_project_file_act.triggered.connect(self.select_project)
-        file_menu.addAction(load_project_file_act)
 
-        save_project_file_act = QAction(self.tr("Save &project"), self)
-        #        save_project_file_act.setShortcut(QKeySequence.Save)
+        save_project_file_act = self.ui.actionSave_Project
         save_project_file_act.triggered.connect(self.save_project)
-        file_menu.addAction(save_project_file_act)
 
-        file_menu.addSeparator()
-
-        # update_preview_act = QAction(self.tr("&Export songbook to PostScript..."), self)
         update_preview_act = self.ui.actionPreview
         update_preview_act.triggered.connect(self.update_preview)
-        update_preview_act.setIcon(QIcon.fromTheme('system-run'))
-        file_menu.addAction(update_preview_act)
 
-        compile_songbook_act = QAction(self.tr("&Compile songbook"), self)
+        compile_songbook_act = self.ui.actionCompile_Songbook
         compile_songbook_act.triggered.connect(self.run_chordii)
-        file_menu.addAction(compile_songbook_act)
 
-        file_menu.addSeparator()
-
-        exit_act = QAction(QIcon.fromTheme('application-exit'), self.tr('E&xit'), self)
+        exit_act = self.ui.actionExit
         exit_act.setShortcut(QKeySequence.Quit)
-        exit_act.setStatusTip(self.tr('Exit application'))
         exit_act.triggered.connect(qApp.quit)
-        file_menu.addAction(exit_act)
 
     def setup_file_widget(self):
+        # TODO: Fix this
+        # self.ui.fileWidget.resizeColumnsToContents()
         self.ui.fileWidget.itemSelectionChanged.connect(self.selection_changed)
 
     def setup_editor(self):
@@ -144,7 +118,7 @@ class MainWindow(QMainWindow):
 
         width = available_geometry.width() * 4 / 5
         height = available_geometry.height() * 4 / 5
-        splitter_size = 300
+        splitter_size = width * .2
         self.ui.splitter.setSizes([splitter_size, (width - splitter_size) / 2, (width - splitter_size) / 2])
         self.resize(width, height)
 
@@ -154,7 +128,7 @@ class MainWindow(QMainWindow):
         self.move(geometry.topLeft())
 
     def selection_changed(self):
-        if len(self.ui.fileWidget.selectedItems()) == 1:
+        if len(self.ui.fileWidget.selectedItems()) == 2:
             if self.ok_to_continue():
                 self.open_file(self.ui.fileWidget.selectedItems()[0].data(Qt.UserRole))
 
@@ -176,11 +150,12 @@ class MainWindow(QMainWindow):
             if self.dirty:
                 return True
             self.dirty = True
-            self.update_status('self.dirty set to True')
+            self.update_status('')
 
     def clear_dirty(self):
         """Clear the dirty."""
         self.dirty = False
+        self.update_status('')
 
     def update_status(self, message):
         """
@@ -188,7 +163,7 @@ class MainWindow(QMainWindow):
         """
         if self.file_name:
             file_base = os.path.basename(self.file_name)
-            self.setWindowTitle(str(self.app_name + " - " + file_base + "[*]"))
+            self.setWindowTitle(file_base + ' [*]' + ' — ' + self.app_name)
             self.ui.statusBar.showMessage(message, 5000)
             self.setWindowModified(self.dirty)
 
@@ -211,7 +186,7 @@ class MainWindow(QMainWindow):
         if not self.ok_to_continue():
             return
         self.file_name = QFileDialog.getSaveFileName(self, self.tr("New file"), QDir.homePath(),
-                                                     self.tr("Chordii files (*.cho *.crd)"))
+                                                     self.tr(CHORDPRO_FILTER))
         if not self.file_name[1]:
             return
         self.save_file()
@@ -221,13 +196,13 @@ class MainWindow(QMainWindow):
         self.ui.textEdit.setFocus()
         self.statusBar().showMessage('New file', 5000)
 
-    def open_file(self, path=""):
+    def open_file(self, path=None):
         if self.ui.textEdit.isReadOnly():
             self.ui.textEdit.setReadOnly(False)
 
         self.file_name = path
 
-        if self.file_name != "":
+        if self.file_name:
             in_stream = codecs.open(self.file_name, "r", "ISO-8859-1")
             if in_stream:
                 self.ui.textEdit.setPlainText(in_stream.read())
@@ -239,9 +214,10 @@ class MainWindow(QMainWindow):
         self.tab2chordpro()
 
     def update_preview(self):
-        out_file = os.path.join(self.temp_dir, os.path.splitext(os.path.basename(self.file_name))[0])
-        out_file = self.run_chordii(self.file_name, out_file, True)
-        self.ui.scrollArea.load(out_file)
+        if self.file_name:
+            out_file = os.path.join(self.temp_dir, os.path.splitext(os.path.basename(self.file_name))[0])
+            out_file = self.run_chordii(self.file_name, out_file, True)
+            self.ui.scrollArea.load(out_file)
 
     def save_file(self):
         """
@@ -269,27 +245,38 @@ class MainWindow(QMainWindow):
         """
         Save file with a different name and maybe different directory.
         """
-        path = self.file_name if self.file_name else self.working_dir
-        fname = QFileDialog.getSaveFileName(self,
-                                            self.tr("Save as..."), path, self.tr("Chordii files (*.cho *.crd)"))[0]
+        path = self.file_name if self.file_name else os.path.dirname(self.project_file)
+        fname = QFileDialog.getSaveFileName(self, self.tr("Save as..."), path, self.tr(CHORDPRO_FILTER))[0]
         if fname:
             print(fname)
             if "." not in fname:
                 fname += ".cho"
             self.file_name = fname
             self.save_file()
-            self.statusBar().showMessage('SaveAs file' + fname, 8000)
             self.clear_dirty()
 
-    def select_dir(self):
-        directory = QFileDialog.getExistingDirectory(self, self.tr("Choose working directory"),
-                                                     self.working_dir if self.working_dir else QDir.homePath())
-        self.open_dir(directory)
-
-    def open_dir(self, directory):
-        for fileType in ('cho', 'crd'):
-            for filename in glob.iglob('{}/*.{}'.format(directory, fileType)):
-                self.songbook.add_song(filename)
+    def import_chordpro_files(self):
+        working_dir = os.path.dirname(self.project_file)
+        file_paths = QFileDialog.getOpenFileNames(self, self.tr("Choose files to import"),
+                                                  working_dir if working_dir else QDir.homePath(),
+                                                  self.tr(CHORDPRO_FILTER))[0]
+        if not file_paths:
+            return
+        title_regex = re.compile(r'\{(?:t|title):(.+)\}')
+        artist_regex = re.compile(r'\{(?:st|subtitle):(.+)\}')
+        for file_path in file_paths:
+            unknown = self.tr('Unknown')
+            title = artist = unknown
+            for line in open(file_path, 'r', encoding='ISO-8859-1'):
+                match = title_regex.match(line)
+                if match:
+                    title = match.group(1).strip()
+                match = artist_regex.match(line)
+                if match:
+                    artist = match.group(1).strip()
+                if unknown not in (title, artist):
+                    break
+            self.songbook.add_song(title, artist, file_path)
         self.open_project()
 
     def select_project(self):
@@ -299,43 +286,43 @@ class MainWindow(QMainWindow):
             self.load_project(filename)
 
     def load_project(self, filename):
+
         self.songbook = Songbook()
         self.songbook.load(filename)
         self.open_project()
 
     def open_project(self):
-        self.ui.fileWidget.clear()
-        missing_files = []
-        for filename in self.songbook.songs:
-            if not os.path.isfile(filename):
-                missing_files.append(os.path.basename(filename))
-                self.songbook.songs.remove(filename)
+        self.ui.fileWidget.clearContents()
+        missing_songs = []
+        for song in self.songbook.songs:
+            if not os.path.isfile(song.file_path):
+                missing_songs.append(song)
+                self.songbook.songs.remove(song)
                 continue
-            item = QListWidgetItem(os.path.basename(filename))
-            item.setData(Qt.UserRole, filename)
-            item.setSizeHint(QSize(0, 30))
-            self.ui.fileWidget.addItem(item)
-        if missing_files:
+            self.add_song(song.title, song.artist, song.file_path)
+        if missing_songs:
             QMessageBox.warning(self, self.tr('Missing files'),
                                 self.tr('The following project files were missing from the project directory:') +
                                 '<ul>' +
-                                ''.join(['<li>{}</li>'.format(filename) for filename in missing_files]) +
-                                '</ul>')
+                                ''.join(['<li>{} - {} ({})</li>'.format(song.artist, song.title, song.file_path)
+                                         for song in missing_songs]) + '</ul>')
         self.ui.statusBar.showMessage("Project opened.", 5000)
+
+    def add_song(self, song_title, song_artist, song_path):
+        title = QTableWidgetItem(song_title)
+        title.setData(Qt.UserRole, song_path)
+        title.setSizeHint(QSize(0, 30))
+        artist = QTableWidgetItem(song_artist)
+        row = self.ui.fileWidget.rowCount()
+        self.ui.fileWidget.insertRow(row)
+        self.ui.fileWidget.setItem(row, 0, title)
+        self.ui.fileWidget.setItem(row, 1, artist)
 
     def save_project(self):
         """
         Save the list of songs for later loading.
         """
-        self.songbook.clear()
-        for i in range(self.ui.fileWidget.count()):
-            path = self.ui.fileWidget.item(i).data(Qt.UserRole)
-            self.songbook.add_song(path)
-        # filename = QFileDialog.getSaveFileName(self, self.tr("Save project"),
-        #                                        self.project_file if self.project_file else QDir.homePath(),
-        #                                        self.tr("Chordii project files (*.chproj)"))
         if self.project_file:
-            self.project_file = self.project_file
             self.songbook.save(self.project_file)
         self.ui.statusBar.showMessage("Project saved.", 5000)
 
@@ -364,8 +351,8 @@ class MainWindow(QMainWindow):
                                                               QDir.homePath())[0]
         command = [chordii_command, "-i", "-L", "-p", "1"] if not preview else [chordii_command]
         if not output_file:
-            out_dir = os.path.join(self.working_dir, "output")
-            output_file = os.path.join(out_dir, "songbook")
+            out_dir = os.path.join(os.path.dirname(self.project_file), "output")
+            output_file = os.path.join(out_dir, self.songbook.name)
             if not os.path.exists(out_dir):
                 os.makedirs(out_dir)
         if not input_file:

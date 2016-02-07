@@ -19,12 +19,12 @@
 
 from PyQt5 import uic
 from PyQt5.QtCore import QDir
-from PyQt5.QtWidgets import QDialog, QLayout, QFileDialog
+from PyQt5.QtWidgets import QDialog, QLayout, QFileDialog, QDesktopWidget
 
 
 class WelcomeDialog(QDialog):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent=None):
+        super().__init__(parent)
         self.ui = uic.loadUi('gui/qtchordii/welcomedialog.ui', self)
 
         self.ui.new_project_btn.clicked.connect(self.new_project)
@@ -37,8 +37,16 @@ class WelcomeDialog(QDialog):
 
         self.ui.layout().setSizeConstraint(QLayout.SetFixedSize)
 
+        self.center()
+
         self.filename = None
         self.new_file = False
+
+    def center(self):
+        center_point = QDesktopWidget().availableGeometry().center()
+        geometry = self.frameGeometry()
+        geometry.moveCenter(center_point)
+        self.move(geometry.topLeft())
 
     def new_project(self):
         self.filename = QFileDialog.getSaveFileName(self, self.tr("New project"), QDir.homePath(),

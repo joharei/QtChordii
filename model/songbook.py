@@ -1,4 +1,4 @@
-#coding: utf-8
+# coding: utf-8
 
 # Copyright (C) 2013-2016 Johan Reitan
 #
@@ -19,20 +19,28 @@
 
 import json
 
+from model.song import Song
+
 
 class Songbook:
-    def __init__(self, name=None):
+    def __init__(self, name='Songbook'):
         self.name = name
         self.songs = []
 
-    def add_song(self, filename):
-        self.songs.append(filename)
+    def add_song(self, title, artist, file_path):
+        self.songs.append(Song(title, artist, file_path))
 
     def clear(self):
         self.songs.clear()
 
-    def save(self, filename):
-        json.dump(self.__dict__, open(filename, 'w'), indent=4)
-
     def load(self, filename):
-        self.__dict__ = json.load(open(filename, 'r'))
+        json_object = json.load(open(filename, 'r'))
+        self.name = json_object['name']
+        for song_object in json_object['songs']:
+            song = Song()
+            song.__dict__ = song_object
+            self.songs.append(song)
+
+    def save(self, filename):
+        dict_to_serialize = {'name': self.name, 'songs': [song.__dict__ for song in self.songs]}
+        json.dump(dict_to_serialize, open(filename, 'w'), indent=4)
