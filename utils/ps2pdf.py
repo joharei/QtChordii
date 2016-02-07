@@ -25,7 +25,12 @@ def ps2pdf(file_name):
     :rtype: str
     """
     out_file_name = file_name + '.pdf'
-    output = subprocess.check_output(['ps2pdf', file_name + '.ps', out_file_name], stderr=subprocess.STDOUT).decode()
-    print('ps2pdf returned:', output)
-    os.remove(file_name + '.ps')
+    try:
+        output = subprocess.check_output(['ps2pdf', file_name + '.ps', out_file_name],
+                                         stderr=subprocess.STDOUT).decode()
+        print('ps2pdf returned:', output)
+    except subprocess.CalledProcessError as e:
+        return None
+    finally:
+        os.remove(file_name + '.ps')
     return out_file_name

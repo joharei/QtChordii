@@ -377,23 +377,26 @@ class MainWindow(QMainWindow):
         command.append(output_file + '.ps')
         print('{}'.format(' '.join(map(str, command))))
         try:
-            response = subprocess.check_output(command, stderr=subprocess.STDOUT)
+            response = subprocess.check_output(command, stderr=subprocess.STDOUT).decode()
             if not preview:
-                if response is not None and response == b'':
-                    QMessageBox.information(self, self.tr(self.app_name + " - Chordii was successful"),
-                                            self.tr("Chordii compiled the songbook without warnings!"))
-                elif response is not None:
+                if response:
                     msg_box = WarningMessageBox()
                     msg_box.setWindowTitle(self.tr(self.app_name + " - Chordii warning"))
                     msg_box.setText(self.tr("Chordii exited with warnings."))
-                    msg_box.setDetailedText(self.tr(bytearray(response).decode()))
+                    msg_box.setDetailedText(response)
                     msg_box.setIcon(QMessageBox.Warning)
                     msg_box.exec_()
+                else:
+                    QMessageBox.information(self, self.tr(self.app_name + " - Chordii was successful"),
+                                            self.tr("Chordii compiled the songbook without warnings!"))
         except subprocess.CalledProcessError as e:
             if not preview:
-                QMessageBox.critical(self, self.tr(self.app_name + " - Chordii problem"),
-                                     self.tr("Chordii crashed while compiling. Please check your syntax.\
-                                             Tip: This is probably due to an incorrect chord definition."))
+                message = self.tr("Chordii crashed while compiling.")
+                if e.stderr:
+                    message += '<br' + self.tr("Chordii output:") + '<br><pre>' + e.stderr + '</pre>'
+                else:
+                    message += '<br>' + self.tr("Tip: This could be due to an incorrect chord definition.")
+                QMessageBox.critical(self, self.tr(self.app_name + " - Chordii problem"), message)
         return ps2pdf(output_file)
 
     def tab2chordpro(self):
