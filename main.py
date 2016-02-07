@@ -30,7 +30,7 @@ from PyQt5 import uic
 from PyQt5.QtCore import Qt, QDir, QSize
 from PyQt5.QtGui import QKeySequence, QIcon
 from PyQt5.QtWidgets import (QApplication, QMenu, QAction, qApp, QMessageBox, QFileDialog, QListWidgetItem,
-                             QMainWindow)
+                             QMainWindow, QDesktopWidget)
 
 from gui.warningmessagebox import WarningMessageBox
 from gui.welcomedialog import WelcomeDialog
@@ -67,11 +67,8 @@ class MainWindow(QMainWindow):
 
         self.setup_file_widget()
         self.setup_editor()
-        width = 1600
-        splitter_size = 300
-        self.ui.splitter.setSizes([splitter_size, (width - splitter_size) / 2, (width - splitter_size) / 2])
         self.setup_file_menu()
-        self.resize(width, 800)
+        self.setup_geometry()
         self.dirty = False
 
     def setup_file_menu(self):
@@ -141,6 +138,20 @@ class MainWindow(QMainWindow):
     def setup_editor(self):
         self.ui.textEdit.set_main(self)
         self.ui.textEdit.textChanged.connect(self.set_dirty)
+
+    def setup_geometry(self):
+        available_geometry = QDesktopWidget().availableGeometry()
+
+        width = available_geometry.width() * 4 / 5
+        height = available_geometry.height() * 4 / 5
+        splitter_size = 300
+        self.ui.splitter.setSizes([splitter_size, (width - splitter_size) / 2, (width - splitter_size) / 2])
+        self.resize(width, height)
+
+        center_point = available_geometry.center()
+        geometry = self.frameGeometry()
+        geometry.moveCenter(center_point)
+        self.move(geometry.topLeft())
 
     def selection_changed(self):
         if len(self.ui.fileWidget.selectedItems()) == 1:
