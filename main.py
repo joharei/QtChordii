@@ -40,7 +40,7 @@ from utils.ps2pdf import ps2pdf
 from utils.which import which
 
 
-class MainForm(QMainWindow):
+class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.ui = uic.loadUi('gui/qtchordii/mainwindow.ui', self)
@@ -320,6 +320,13 @@ class MainForm(QMainWindow):
     def run_chordii(self, input_file=None, output_file=None, preview=False):
         """
         Run Chordii to produce output.
+        :param input_file: The name of the chordpro file to compile. If None, all chordii files in the project will be
+            compiled.
+        :type input_file: str
+        :param output_file: The filename of the resulting pdf. If None, a temp file will be created.
+        :type output_file: str
+        :param preview: Whether to compile a single song as a preview, or the whole project.
+        :type preview: bool
         """
 
         chordii_command = which("chordii")
@@ -388,7 +395,7 @@ def parse_arguments():
 if __name__ == "__main__":
     app = QApplication(sys.argv)
 
-    myapp = MainForm()
-    myapp.show()
+    qt_chordii = MainWindow()
+    qt_chordii.show()
 
     app.exec_()
