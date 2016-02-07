@@ -41,7 +41,7 @@ Dependencies
 Copyright
 ---------
 
-Copyright (C) 2013, 2014 Johan Reitan.
+Copyright (C) 2013-2016 Johan Reitan.
 
 QtChordii is licensed following the conditions of the GNU Public License version 3 or later. See COPYING for the full
 license text.

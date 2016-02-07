@@ -1,4 +1,4 @@
-# Copyright (C) 2013, 2014 Johan Reitan
+# Copyright (C) 2013-2016 Johan Reitan
 #
 # This file is part of QtChordii.
 #
