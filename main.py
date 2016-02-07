@@ -34,7 +34,7 @@ from PyQt5.QtWidgets import (QApplication, QMenu, QAction, qApp, QMessageBox, QF
 
 from gui.warningmessagebox import WarningMessageBox
 from gui.welcomedialog import WelcomeDialog
-from songbook import Songbook
+from model.songbook import Songbook
 from tab2chordpro.Transpose import testTabFormat, tab2ChordPro, enNotation
 from utils.ps2pdf import ps2pdf
 from utils.which import which

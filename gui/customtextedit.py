@@ -19,7 +19,7 @@
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import QTextEdit
 
-from syntax import ChordProHighlighter
+from gui.syntax import ChordProHighlighter
 
 
 class CustomTextEdit(QTextEdit):
