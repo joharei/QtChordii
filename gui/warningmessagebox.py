@@ -15,18 +15,17 @@
 # You should have received a copy of the GNU General Public License
 # along with QtChordii.  If not, see <http://www.gnu.org/licenses/>.
 
-from PyQt4.QtGui import *
+from PyQt5.QtWidgets import QMessageBox, QTextEdit
 
 
 class WarningMessageBox(QMessageBox):
-
-    def __init__(self, *args, **kwargs):
-        super(WarningMessageBox, self).__init__(*args, **kwargs)
+    def __init__(self):
+        super().__init__()
         self.detail_box_size = None
 
     def resizeEvent(self, event):
 
-        result = super(WarningMessageBox, self).resizeEvent(event)
+        result = super().resizeEvent(event)
 
         details_box = self.findChild(QTextEdit)
         if self.detail_box_size is None:

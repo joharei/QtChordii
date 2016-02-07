@@ -15,8 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with QtChordii.  If not, see <http://www.gnu.org/licenses/>.
 
-from PyQt4 import QtGui
-from PyQt4.QtGui import QTextEdit
+
+from PyQt5.QtGui import QFont
+from PyQt5.QtWidgets import QTextEdit
+
 from syntax import ChordProHighlighter
 
 
@@ -25,7 +27,7 @@ class CustomTextEdit(QTextEdit):
         super(CustomTextEdit, self).__init__(parent)
         self.main = None
 
-        font = QtGui.QFont()
+        font = QFont()
         font.setFamily("Courier")
         font.setFixedPitch(True)
         font.setPointSize(10)
@@ -42,5 +44,5 @@ class CustomTextEdit(QTextEdit):
 
     def insertFromMimeData(self, source):
         self.insertPlainText(source.text())
-        if not self.main is None:
+        if self.main is not None:
             self.main.tab2chordpro()

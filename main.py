@@ -18,29 +18,31 @@
 # along with QtChordii.  If not, see <http://www.gnu.org/licenses/>.
 
 import argparse
+import codecs
+import glob
 import os
 import shutil
 import subprocess
 import sys
-import codecs
-import glob
 import tempfile
 
-from PyQt4 import QtCore, QtGui, uic
-from PyQt4.QtCore import QDir, Qt, QSize
-from PyQt4.QtGui import QFileDialog, QMessageBox, QListWidgetItem, QIcon
+from PyQt5 import uic
+from PyQt5.QtCore import Qt, QDir, QSize
+from PyQt5.QtGui import QKeySequence, QIcon
+from PyQt5.QtWidgets import (QApplication, QMenu, QAction, qApp, QMessageBox, QFileDialog, QListWidgetItem,
+                             QMainWindow)
 
 from gui.warningmessagebox import WarningMessageBox
 from gui.welcomedialog import WelcomeDialog
 from songbook import Songbook
 from tab2chordpro.Transpose import testTabFormat, tab2ChordPro, enNotation
-from utils.which import which
 from utils.ps2pdf import ps2pdf
+from utils.which import which
 
 
-class MainForm(QtGui.QMainWindow):
-    def __init__(self, parent=None):
-        QtGui.QMainWindow.__init__(self, parent)
+class MainForm(QMainWindow):
+    def __init__(self):
+        super().__init__()
         self.ui = uic.loadUi('gui/qtchordii/mainwindow.ui', self)
 
         self.app_name = "QtChordii"
@@ -73,62 +75,65 @@ class MainForm(QtGui.QMainWindow):
         self.dirty = False
 
     def setup_file_menu(self):
-        file_menu = QtGui.QMenu(self.tr("&File"), self)
+        file_menu = QMenu(self.tr("&File"), self)
         self.menuBar.addMenu(file_menu)
 
-        # new_file_act = QtGui.QAction(self.tr("&New..."), self)
+        # new_file_act = QAction(self.tr("&New..."), self)
         new_file_act = self.ui.actionNew
-        new_file_act.setShortcut(QtGui.QKeySequence.New)
+        new_file_act.setShortcut(QKeySequence.New)
         new_file_act.setIcon(QIcon.fromTheme('document-new'))
         new_file_act.triggered.connect(self.new_file)
         file_menu.addAction(new_file_act)
 
-        # open_file_act = QtGui.QAction(self.tr("&Open Directory..."), self)
+        # open_file_act = QAction(self.tr("&Open Directory..."), self)
         open_file_act = self.ui.actionOpen
-        open_file_act.setShortcut(QtGui.QKeySequence.Open)
+        open_file_act.setShortcut(QKeySequence.Open)
         open_file_act.setIcon(QIcon.fromTheme('folder-open'))
         open_file_act.triggered.connect(self.select_dir)
         file_menu.addAction(open_file_act)
 
-        # save_file_act = QtGui.QAction(self.tr("&Save"), self)
+        # save_file_act = QAction(self.tr("&Save"), self)
         save_file_act = self.ui.actionSave
-        save_file_act.setShortcut(QtGui.QKeySequence.Save)
+        save_file_act.setShortcut(QKeySequence.Save)
         save_file_act.setIcon(QIcon.fromTheme('document-save'))
         save_file_act.triggered.connect(self.save_file)
         file_menu.addAction(save_file_act)
 
-        save_file_as_act = QtGui.QAction(self.tr("Save as..."), self)
-        save_file_as_act.setShortcut(QtGui.QKeySequence.SaveAs)
+        save_file_as_act = QAction(self.tr("Save as..."), self)
+        save_file_as_act.setShortcut(QKeySequence.SaveAs)
         save_file_as_act.triggered.connect(self.save_file_as)
         file_menu.addAction(save_file_as_act)
 
         file_menu.addSeparator()
 
-        load_project_file_act = QtGui.QAction(self.tr("&Load project"), self)
+        load_project_file_act = QAction(self.tr("&Load project"), self)
         load_project_file_act.triggered.connect(self.select_project)
         file_menu.addAction(load_project_file_act)
 
-        save_project_file_act = QtGui.QAction(self.tr("Save &project"), self)
-        #        save_project_file_act.setShortcut(QtGui.QKeySequence.Save)
+        save_project_file_act = QAction(self.tr("Save &project"), self)
+        #        save_project_file_act.setShortcut(QKeySequence.Save)
         save_project_file_act.triggered.connect(self.save_project)
         file_menu.addAction(save_project_file_act)
 
         file_menu.addSeparator()
 
-        # update_preview_act = QtGui.QAction(self.tr("&Export songbook to PostScript..."), self)
+        # update_preview_act = QAction(self.tr("&Export songbook to PostScript..."), self)
         update_preview_act = self.ui.actionPreview
         update_preview_act.triggered.connect(self.update_preview)
         update_preview_act.setIcon(QIcon.fromTheme('system-run'))
         file_menu.addAction(update_preview_act)
 
-        compile_songbook_act = QtGui.QAction(self.tr("&Compile songbook"), self)
+        compile_songbook_act = QAction(self.tr("&Compile songbook"), self)
         compile_songbook_act.triggered.connect(self.run_chordii)
         file_menu.addAction(compile_songbook_act)
 
         file_menu.addSeparator()
 
-        file_menu.addAction(self.tr("E&xit"), QtGui.qApp, QtCore.SLOT("quit()"),
-                            QtGui.QKeySequence.Quit)
+        exit_act = QAction(QIcon.fromTheme('application-exit'), self.tr('E&xit'), self)
+        exit_act.setShortcut(QKeySequence.Quit)
+        exit_act.setStatusTip(self.tr('Exit application'))
+        exit_act.triggered.connect(qApp.quit)
+        file_menu.addAction(exit_act)
 
     def setup_file_widget(self):
         self.ui.fileWidget.itemSelectionChanged.connect(self.selection_changed)
@@ -381,7 +386,9 @@ def parse_arguments():
 
 
 if __name__ == "__main__":
-    app = QtGui.QApplication(sys.argv)
+    app = QApplication(sys.argv)
+
     myapp = MainForm()
     myapp.show()
-    sys.exit(app.exec_())
+
+    app.exec_()

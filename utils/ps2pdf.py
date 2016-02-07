@@ -20,6 +20,7 @@ import subprocess
 
 
 def ps2pdf(file):
-        out_file = '{}.pdf'.format(os.path.splitext(file)[0])
-        print(subprocess.check_output(['ps2pdf', file, out_file], stderr=subprocess.STDOUT))
-        return out_file
+    out_file = '{}.pdf'.format(os.path.splitext(file)[0])
+    output = subprocess.check_output(['ps2pdf', file, out_file], stderr=subprocess.STDOUT).decode()
+    print('ps2pdf returned:', output)
+    return out_file

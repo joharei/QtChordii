@@ -15,9 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with QtChordii.  If not, see <http://www.gnu.org/licenses/>.
 
-from PyQt4 import QtGui
-from PyQt4.QtGui import QScrollArea
-import popplerqt4
+from popplerqt5 import Poppler
+from PyQt5.QtGui import QPixmap
+from PyQt5.QtWidgets import QScrollArea, QWidget, QVBoxLayout, QLabel
 
 
 class PDFViewer(QScrollArea):
@@ -31,9 +31,9 @@ class PDFViewer(QScrollArea):
         self.scroll_layout = None
 
     def load(self, filename):
-        self.doc = popplerqt4.Poppler.Document.load(filename)
+        self.doc = Poppler.Document.load(filename)
         self.doc.setRenderHint(
-            popplerqt4.Poppler.Document.Antialiasing and popplerqt4.Poppler.Document.TextAntialiasing)
+                Poppler.Document.Antialiasing and Poppler.Document.TextAntialiasing)
         self.current_page = 0
         self.pdf_images = [None for i in range(self.doc.numPages())]
         self.cache_image(self.current_page)
@@ -69,14 +69,14 @@ class PDFViewer(QScrollArea):
         if img is None:
             return
 
-        scroll_contents = QtGui.QWidget()
+        scroll_contents = QWidget()
         self.setWidget(scroll_contents)
-        self.scroll_layout = QtGui.QVBoxLayout()
+        self.scroll_layout = QVBoxLayout()
         scroll_contents.setLayout(self.scroll_layout)
 
         for i in range(self.doc.numPages()):
             img = self.get_image(i)
-            label = QtGui.QLabel()
-            label.setPixmap(QtGui.QPixmap(img))
+            label = QLabel()
+            label.setPixmap(QPixmap(img))
 
             self.scroll_layout.addWidget(label)

@@ -30,5 +30,5 @@ setup(
     executables=[Executable("main.py",
                             shortcutName="QtChordii",
                             shortcutDir="DesktopFolder",
-                            base=base)], requires=['PyQt4']
+                            base=base)], requires=['PyQt5']
 )

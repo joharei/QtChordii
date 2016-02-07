@@ -17,14 +17,14 @@
 # You should have received a copy of the GNU General Public License
 # along with QtChordii.  If not, see <http://www.gnu.org/licenses/>.
 
-from PyQt4 import QtGui, uic
-from PyQt4.QtCore import QDir
-from PyQt4.QtGui import QFileDialog, QLayout
+from PyQt5 import uic
+from PyQt5.QtCore import QDir
+from PyQt5.QtWidgets import QDialog, QLayout, QFileDialog
 
 
-class WelcomeDialog(QtGui.QDialog):
-    def __init__(self, parent=None):
-        super(WelcomeDialog, self).__init__(parent)
+class WelcomeDialog(QDialog):
+    def __init__(self):
+        super().__init__()
         self.ui = uic.loadUi('gui/qtchordii/welcomedialog.ui', self)
 
         self.ui.new_project_btn.clicked.connect(self.new_project)
@@ -33,7 +33,7 @@ class WelcomeDialog(QtGui.QDialog):
         self.ui.open_project_btn.setFocus()
 
         self.ui.welcome_label.setText(
-            self.tr("Welcome to QtChordii!\nPlease create a new songbook project, or load an existing one."))
+                self.tr("Welcome to QtChordii!\nPlease create a new songbook project, or load an existing one."))
 
         self.ui.layout().setSizeConstraint(QLayout.SetFixedSize)
 
@@ -42,13 +42,13 @@ class WelcomeDialog(QtGui.QDialog):
 
     def new_project(self):
         self.filename = QFileDialog.getSaveFileName(self, self.tr("New project"), QDir.homePath(),
-                                                    self.tr("Chordii project files (*.chproj)"))
+                                                    self.tr("Chordii project files (*.chproj)"))[0]
         self.new_file = True
         self.close()
 
     def open_project(self):
         self.filename = QFileDialog.getOpenFileName(self, self.tr("Open project"), QDir.homePath(),
-                                                    self.tr("Chordii project files (*.chproj)"))
+                                                    self.tr("Chordii project files (*.chproj)"))[0]
         self.close()
 
     @staticmethod
