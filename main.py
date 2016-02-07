@@ -228,9 +228,9 @@ class MainWindow(QMainWindow):
         self.tab2chordpro()
 
     def update_preview(self):
-        out_file = os.path.join(self.temp_dir, '{}.ps'.format(os.path.splitext(os.path.basename(self.file_name))[0]))
-        self.run_chordii(self.file_name, out_file, True)
-        self.ui.scrollArea.load(ps2pdf(out_file))
+        out_file = os.path.join(self.temp_dir, os.path.splitext(os.path.basename(self.file_name))[0])
+        out_file = self.run_chordii(self.file_name, out_file, True)
+        self.ui.scrollArea.load(out_file)
 
     def save_file(self):
         """
@@ -354,7 +354,7 @@ class MainWindow(QMainWindow):
         command = [chordii_command, "-i", "-L", "-p", "1"] if not preview else [chordii_command]
         if not output_file:
             out_dir = os.path.join(self.working_dir, "output")
-            output_file = os.path.join(out_dir, "songbook.ps")
+            output_file = os.path.join(out_dir, "songbook")
             if not os.path.exists(out_dir):
                 os.makedirs(out_dir)
         if not input_file:
@@ -363,7 +363,7 @@ class MainWindow(QMainWindow):
         else:
             command.append(input_file)
         command.append("-o")
-        command.append(output_file)
+        command.append(output_file + '.ps')
         print('{}'.format(' '.join(map(str, command))))
         try:
             response = subprocess.check_output(command, stderr=subprocess.STDOUT)
@@ -383,6 +383,7 @@ class MainWindow(QMainWindow):
                 QMessageBox.critical(self, self.tr(self.app_name + " - Chordii problem"),
                                      self.tr("Chordii crashed while compiling. Please check your syntax.\
                                              Tip: This is probably due to an incorrect chord definition."))
+        return ps2pdf(output_file)
 
     def tab2chordpro(self):
         notation = testTabFormat(self.ui.textEdit.toPlainText(), [enNotation])

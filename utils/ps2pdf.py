@@ -15,12 +15,16 @@
 # You should have received a copy of the GNU General Public License
 # along with QtChordii.  If not, see <http://www.gnu.org/licenses/>.
 
-import os
 import subprocess
 
 
-def ps2pdf(file):
-    out_file = '{}.pdf'.format(os.path.splitext(file)[0])
-    output = subprocess.check_output(['ps2pdf', file, out_file], stderr=subprocess.STDOUT).decode()
+def ps2pdf(file_name):
+    """
+    Converts a file from PostScript to PDF
+    :param file_name: Name of the ps file to convert (without extension)
+    :rtype: str
+    """
+    out_file_name = file_name + '.pdf'
+    output = subprocess.check_output(['ps2pdf', file_name + '.ps', out_file_name], stderr=subprocess.STDOUT).decode()
     print('ps2pdf returned:', output)
-    return out_file
+    return out_file_name
