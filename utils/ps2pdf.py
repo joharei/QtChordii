@@ -14,7 +14,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with QtChordii.  If not, see <http://www.gnu.org/licenses/>.
-
+import os
 import subprocess
 
 
@@ -27,4 +27,5 @@ def ps2pdf(file_name):
     out_file_name = file_name + '.pdf'
     output = subprocess.check_output(['ps2pdf', file_name + '.ps', out_file_name], stderr=subprocess.STDOUT).decode()
     print('ps2pdf returned:', output)
+    os.remove(file_name + '.ps')
     return out_file_name
