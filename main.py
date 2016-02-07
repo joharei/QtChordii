@@ -38,7 +38,7 @@ from tab2chordpro.Transpose import testTabFormat, tab2ChordPro, enNotation
 from utils.ps2pdf import ps2pdf
 from utils.which import which
 
-CHORDPRO_FILTER = QT_TRANSLATE_NOOP('MainWindow', 'Chordpro files (*.cho *.crd)')
+CHORDPRO_FILTER = QT_TRANSLATE_NOOP('MainWindow', 'ChordPro files (*.cho *.crd)')
 
 
 class MainWindow(QMainWindow):
@@ -329,7 +329,7 @@ class MainWindow(QMainWindow):
     def run_chordii(self, input_file=None, output_file=None, preview=False):
         """
         Run Chordii to produce output.
-        :param input_file: The name of the chordpro file to compile. If None, all chordii files in the project will be
+        :param input_file: The name of the ChordPro file to compile. If None, all chordii files in the project will be
             compiled.
         :type input_file: str
         :param output_file: The filename of the resulting pdf. If None, a temp file will be created.
