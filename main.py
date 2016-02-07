@@ -294,11 +294,22 @@ class MainWindow(QMainWindow):
 
     def open_project(self):
         self.ui.fileWidget.clear()
+        missing_files = []
         for filename in self.songbook.songs:
+            if not os.path.isfile(filename):
+                missing_files.append(os.path.basename(filename))
+                self.songbook.songs.remove(filename)
+                continue
             item = QListWidgetItem(os.path.basename(filename))
             item.setData(Qt.UserRole, filename)
             item.setSizeHint(QSize(0, 30))
             self.ui.fileWidget.addItem(item)
+        if missing_files:
+            QMessageBox.warning(self, self.tr('Missing files'),
+                                self.tr('The following project files were missing from the project directory:') +
+                                '<ul>' +
+                                ''.join(['<li>{}</li>'.format(filename) for filename in missing_files]) +
+                                '</ul>')
         self.ui.statusBar.showMessage("Project opened.", 5000)
 
     def save_project(self):
