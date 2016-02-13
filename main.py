@@ -20,12 +20,12 @@
 import argparse
 import codecs
 import os
+import re
 import shutil
 import subprocess
 import sys
 import tempfile
 
-import re
 from PyQt5 import uic
 from PyQt5.QtCore import Qt, QDir, QSize, QT_TRANSLATE_NOOP
 from PyQt5.QtGui import QKeySequence
@@ -34,6 +34,7 @@ from PyQt5.QtWidgets import QApplication, qApp, QMessageBox, QFileDialog, QMainW
 from gui.warningmessagebox import WarningMessageBox
 from gui.welcomedialog import WelcomeDialog
 from model.songbook import Songbook
+from settings import settings
 from tab2chordpro.Transpose import testTabFormat, tab2ChordPro, enNotation
 from utils.ps2pdf import ps2pdf
 from utils.which import which
@@ -46,7 +47,8 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.ui = uic.loadUi('gui/qtchordii/mainwindow.ui', self)
 
-        self.app_name = "QtChordii"
+        settings.set_up_settings()
+        self.app_name = settings.APPLICATION_NAME
 
         args = parse_arguments()
 
@@ -114,18 +116,30 @@ class MainWindow(QMainWindow):
         self.ui.textEdit.textChanged.connect(self.set_dirty)
 
     def setup_geometry(self):
-        available_geometry = QDesktopWidget().availableGeometry()
+        geometries = settings.load_window_geometry()
+        size = geometries[settings.key_size]
+        if not size:
+            size = QDesktopWidget().availableGeometry().size() * 4 / 5
+        self.resize(size)
 
-        width = available_geometry.width() * 4 / 5
-        height = available_geometry.height() * 4 / 5
-        splitter_size = width * .2
-        self.ui.splitter.setSizes([splitter_size, (width - splitter_size) / 2, (width - splitter_size) / 2])
-        self.resize(width, height)
+        is_full_screen = geometries[settings.key_is_full_screen]
+        if is_full_screen:
+            self.showFullScreen()
 
-        center_point = available_geometry.center()
-        geometry = self.frameGeometry()
-        geometry.moveCenter(center_point)
-        self.move(geometry.topLeft())
+        splitter_sizes = geometries[settings.key_splitter_sizes]
+        if not splitter_sizes:
+            width = size.width()
+            splitter_size = width * .2
+            splitter_sizes = [splitter_size, (width - splitter_size) / 2, (width - splitter_size) / 2]
+        self.ui.splitter.setSizes(splitter_sizes)
+
+        pos = geometries[settings.key_pos]
+        if not pos:
+            center_point = QDesktopWidget().availableGeometry().center()
+            geometry = self.frameGeometry()
+            geometry.moveCenter(center_point)
+            pos = geometry.topLeft()
+        self.move(pos)
 
     def selection_changed(self):
         if len(self.ui.fileWidget.selectedItems()) == 2:
@@ -134,9 +148,10 @@ class MainWindow(QMainWindow):
 
     def closeEvent(self, event):
         """
-        Ask to save, and remove temp_dir
+        Ask to save ChordPro file, save window geometry, and remove temp_dir
         """
         if self.ok_to_continue():
+            settings.save_window_geometry(self.size(), self.pos(), self.isFullScreen(), self.ui.splitter.sizes())
             shutil.rmtree(self.temp_dir)
             event.accept()
         else:
