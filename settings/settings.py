@@ -20,11 +20,14 @@
 from PyQt5.QtCore import QSettings, QCoreApplication, QSize, QPoint
 
 APPLICATION_NAME = 'QtChordii'
-main_window_group = 'MainWindow'
+group_main_window = 'MainWindow'
 key_size = 'size'
 key_pos = 'pos'
 key_is_full_screen = 'is_full_screen'
 key_splitter_sizes = 'splitter_sizes'
+
+group_project_settings = 'ProjectSettings'
+key_project_file = 'project_file'
 
 
 def set_up_settings():
@@ -34,7 +37,7 @@ def set_up_settings():
 
 def save_window_geometry(size, pos, is_full_screen, splitter_sizes):
     settings = QSettings()
-    settings.beginGroup(main_window_group)
+    settings.beginGroup(group_main_window)
     settings.setValue(key_size, size)
     settings.setValue(key_pos, pos)
     settings.setValue(key_is_full_screen, is_full_screen)
@@ -44,10 +47,20 @@ def save_window_geometry(size, pos, is_full_screen, splitter_sizes):
 
 def load_window_geometry():
     settings = QSettings()
-    settings.beginGroup(main_window_group)
+    settings.beginGroup(group_main_window)
     size = settings.value(key_size, type=QSize)
     pos = settings.value(key_pos, type=QPoint)
     is_full_screen = settings.value(key_is_full_screen, type=bool)
     splitter_sizes = settings.value(key_splitter_sizes, type=int)
     settings.endGroup()
     return {key_size: size, key_pos: pos, key_is_full_screen: is_full_screen, key_splitter_sizes: splitter_sizes}
+
+
+def save_project_file(filename):
+    settings = QSettings()
+    settings.setValue('/'.join((group_project_settings, key_project_file)), filename)
+
+
+def load_project_file():
+    settings = QSettings()
+    return settings.value('/'.join((group_project_settings, key_project_file)))

@@ -57,11 +57,13 @@ class MainWindow(QMainWindow):
         if args.project:
             self.project_file = os.path.abspath(args.project)
         else:
-            self.project_file, new_file = WelcomeDialog.get_project(self)
+            self.project_file = settings.load_project_file()
             if not self.project_file:
-                sys.exit(0)
-            if new_file:
-                self.save_project()
+                self.project_file, new_file = WelcomeDialog.get_project(self)
+                if not self.project_file:
+                    sys.exit(0)
+                if new_file:
+                    self.save_project()
 
         self.load_project(self.project_file)
 
@@ -301,10 +303,10 @@ class MainWindow(QMainWindow):
             self.load_project(filename)
 
     def load_project(self, filename):
-
         self.songbook = Songbook()
         self.songbook.load(filename)
         self.open_project()
+        settings.save_project_file(filename)
 
     def open_project(self):
         self.ui.fileWidget.clearContents()
@@ -317,7 +319,7 @@ class MainWindow(QMainWindow):
             self.add_song(song.title, song.artist, song.file_path)
         if missing_songs:
             QMessageBox.warning(self, self.tr('Missing files'),
-                                self.tr('The following project files were missing from the project directory:') +
+                                self.tr('The following project files were missing:') +
                                 '<ul>' +
                                 ''.join(['<li>{} - {} ({})</li>'.format(song.artist, song.title, song.file_path)
                                          for song in missing_songs]) + '</ul>')
