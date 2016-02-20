@@ -318,11 +318,14 @@ class MainWindow(QMainWindow):
                 continue
             self.add_song(song.title, song.artist, song.file_path)
         if missing_songs:
-            QMessageBox.warning(self, self.tr('Missing files'),
-                                self.tr('The following project files were missing:') +
-                                '<ul>' +
-                                ''.join(['<li>{} - {} ({})</li>'.format(song.artist, song.title, song.file_path)
-                                         for song in missing_songs]) + '</ul>')
+            message_box = QMessageBox(QMessageBox.Warning, self.tr('Missing files'),
+                                      self.tr('The following project files were missing:'), QMessageBox.Ok, self)
+            message_box.setInformativeText('<ul>' +
+                                           ''.join(['<li>{} - {} ({})</li>'.format(song.artist, song.title,
+                                                                                   song.file_path)
+                                                    for song in missing_songs]) + '</ul>')
+            message_box.setIcon(QMessageBox.Warning)
+            message_box.show()
         self.ui.statusBar.showMessage("Project opened.", 5000)
 
     def add_song(self, song_title, song_artist, song_path):
