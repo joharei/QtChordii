@@ -18,6 +18,7 @@
 # along with QtChordii.  If not, see <http://www.gnu.org/licenses/>.
 
 import json
+import os
 
 from model.song import Song
 
@@ -34,13 +35,21 @@ class Songbook:
         self.songs.clear()
 
     def load(self, filename):
+        project_dir = os.path.dirname(filename)
         json_object = json.load(open(filename, 'r'))
         self.name = json_object['name']
-        for song_object in json_object['songs']:
-            song = Song()
-            song.__dict__ = song_object
-            self.songs.append(song)
+        self.songs = [
+            Song(song_object['title'], song_object['artist'], os.path.join(project_dir, song_object['file_path']))
+            for song_object in json_object['songs']]
 
     def save(self, filename):
-        dict_to_serialize = {'name': self.name, 'songs': [song.__dict__ for song in self.songs]}
+        project_dir = os.path.dirname(filename)
+        dict_to_serialize = {
+            'name': self.name,
+            'songs': [{
+                          'artist': song.artist,
+                          'title': song.title,
+                          'file_path': os.path.relpath(song.file_path, project_dir)
+                      } for song in self.songs]
+        }
         json.dump(dict_to_serialize, open(filename, 'w'), indent=4)
