@@ -376,8 +376,8 @@ class MainWindow(QMainWindow):
             if not os.path.exists(out_dir):
                 os.makedirs(out_dir)
         if not input_file:
-            for i in range(self.ui.fileWidget.count()):
-                command.append(self.ui.fileWidget.item(i).data(Qt.UserRole))
+            for i in range(self.ui.fileWidget.rowCount()):
+                command.append(self.ui.fileWidget.item(i, 0).data(Qt.UserRole))
         else:
             command.append(input_file)
         command.append("-o")
